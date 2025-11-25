@@ -139,6 +139,8 @@ export const PropertiesManager = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    const ownerId = formData.get("owner_id") as string;
+    
     const property = {
       title: formData.get("title") as string,
       description: formData.get("description") as string,
@@ -154,7 +156,7 @@ export const PropertiesManager = () => {
       amenities: formData.get("amenities") 
         ? (formData.get("amenities") as string).split(",").map(a => a.trim())
         : [],
-      owner_id: formData.get("owner_id") as string || null,
+      owner_id: ownerId === "none" ? null : ownerId,
       status: formData.get("status") as string || "active",
       available_from: formData.get("available_from") as string || null,
       available_until: formData.get("available_until") as string || null,
@@ -249,12 +251,12 @@ export const PropertiesManager = () => {
                   <div className="grid grid-cols-2 gap-4 col-span-2">
                     <div>
                       <Label htmlFor="owner_id">Propriétaire</Label>
-                      <Select name="owner_id" defaultValue={editingProperty?.owner_id || ""}>
+                      <Select name="owner_id" defaultValue={editingProperty?.owner_id || "none"}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un propriétaire" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Aucun</SelectItem>
+                          <SelectItem value="none">Aucun</SelectItem>
                           {owners?.map((owner) => (
                             <SelectItem key={owner.id} value={owner.id}>
                               {owner.name}
