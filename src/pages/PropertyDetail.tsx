@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { PropertyMap } from "@/components/property/PropertyMap";
-import { AvailabilityCalendar } from "@/components/property/AvailabilityCalendar";
+import { BookingForm } from "@/components/BookingForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -22,7 +22,6 @@ import {
   WashingMachine,
   ChevronLeft
 } from "lucide-react";
-import { useState } from "react";
 
 const AMENITY_ICONS: Record<string, any> = {
   "WiFi": Wifi,
@@ -35,8 +34,6 @@ const AMENITY_ICONS: Record<string, any> = {
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedCheckIn, setSelectedCheckIn] = useState<Date>();
-  const [selectedCheckOut, setSelectedCheckOut] = useState<Date>();
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", id],
@@ -51,6 +48,32 @@ const PropertyDetail = () => {
       return data;
     },
     enabled: !!id,
+  });
+
+  // Fetch existing bookings to show booked dates
+  const { data: bookings } = useQuery({
+    queryKey: ["bookings", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("check_in_date, check_out_date")
+        .eq("property_id", id)
+        .in("status", ["pending", "confirmed"]);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
+  // Convert bookings to booked dates array
+  const bookedDates: Date[] = [];
+  bookings?.forEach((booking) => {
+    const start = new Date(booking.check_in_date);
+    const end = new Date(booking.check_out_date);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      bookedDates.push(new Date(d));
+    }
   });
 
   if (isLoading) {
@@ -88,14 +111,6 @@ const PropertyDetail = () => {
   ];
 
   const amenities = property.amenities as string[] || [];
-
-  const calculateTotalPrice = () => {
-    if (!selectedCheckIn || !selectedCheckOut) return 0;
-    const days = Math.ceil(
-      (selectedCheckOut.getTime() - selectedCheckIn.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return days * Number(property.price_per_night);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -199,53 +214,13 @@ const PropertyDetail = () => {
 
           {/* Right Column - Booking Card */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <Card className="p-6 space-y-6">
-              <div>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-3xl font-bold">{property.price_per_night}€</span>
-                  <span className="text-muted-foreground">/ nuit</span>
-                </div>
-                <div className="flex items-center gap-1 text-sm">
-                  <Star className="fill-yellow-400 text-yellow-400" size={14} />
-                  <span className="font-medium">{property.rating}</span>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Calendar */}
-              <div>
-                <h3 className="font-semibold mb-4">Sélectionnez vos dates</h3>
-                <AvailabilityCalendar
-                  onSelectDates={(checkIn, checkOut) => {
-                    setSelectedCheckIn(checkIn);
-                    setSelectedCheckOut(checkOut);
-                  }}
-                />
-              </div>
-
-              {/* Total Price */}
-              {selectedCheckIn && selectedCheckOut && (
-                <div className="space-y-2">
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>{calculateTotalPrice()}€</span>
-                  </div>
-                </div>
-              )}
-
-              <Button 
-                size="lg" 
-                className="w-full"
-                disabled={!selectedCheckIn || !selectedCheckOut}
-              >
-                Réserver
-              </Button>
-
-              <p className="text-xs text-center text-muted-foreground">
-                Vous ne serez pas débité pour le moment
-              </p>
+            <Card className="p-6">
+              <BookingForm 
+                propertyId={property.id}
+                pricePerNight={Number(property.price_per_night)}
+                maxGuests={property.max_guests}
+                bookedDates={bookedDates}
+              />
             </Card>
           </div>
         </div>
