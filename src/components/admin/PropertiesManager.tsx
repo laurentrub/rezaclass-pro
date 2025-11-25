@@ -135,45 +135,93 @@ export const PropertiesManager = () => {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     const ownerId = formData.get("owner_id") as string;
-    const imagesInput = formData.get("images") as string;
     
-    // Parse images input (format: url1|alt1, url2|alt2)
-    const images = imagesInput
-      ? imagesInput.split(",").map(img => {
-          const [url, alt] = img.trim().split("|");
-          return { url: url?.trim() || "", alt: alt?.trim() || "" };
-        }).filter(img => img.url)
-      : [];
-    
-    const property = {
-      title: formData.get("title") as string,
-      description: formData.get("description") as string,
-      location: formData.get("location") as string,
-      address: formData.get("address") as string,
-      price_per_night: parseFloat(formData.get("price_per_night") as string),
-      max_guests: parseInt(formData.get("max_guests") as string),
-      bedrooms: parseInt(formData.get("bedrooms") as string),
-      bathrooms: parseInt(formData.get("bathrooms") as string),
-      latitude: formData.get("latitude") ? parseFloat(formData.get("latitude") as string) : null,
-      longitude: formData.get("longitude") ? parseFloat(formData.get("longitude") as string) : null,
-      rating: formData.get("rating") ? parseFloat(formData.get("rating") as string) : 4.5,
-      image_url: formData.get("image_url") as string,
-      images: images.length > 0 ? images : null,
-      amenities: formData.get("amenities") 
-        ? (formData.get("amenities") as string).split(",").map(a => a.trim())
-        : [],
-      owner_id: ownerId === "none" ? null : ownerId,
-      status: formData.get("status") as string || "active",
-      available_from: formData.get("available_from") as string || null,
-      available_until: formData.get("available_until") as string || null,
-    };
+    try {
+      // Upload main image
+      let mainImageUrl = editingProperty?.image_url || "";
+      const mainImageFile = formData.get("main_image") as File;
+      if (mainImageFile && mainImageFile.size > 0) {
+        const mainImageExt = mainImageFile.name.split('.').pop();
+        const mainImagePath = `${crypto.randomUUID()}.${mainImageExt}`;
+        const { data: mainImageData, error: mainImageError } = await supabase.storage
+          .from('property-images')
+          .upload(mainImagePath, mainImageFile);
+        
+        if (mainImageError) throw mainImageError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-images')
+          .getPublicUrl(mainImagePath);
+        
+        mainImageUrl = publicUrl;
+      }
 
-    saveMutation.mutate(property);
+      // Upload gallery images
+      const galleryFiles = formData.getAll("gallery_images") as File[];
+      const uploadedGalleryImages = [];
+      
+      for (const file of galleryFiles) {
+        if (file && file.size > 0) {
+          const ext = file.name.split('.').pop();
+          const path = `${crypto.randomUUID()}.${ext}`;
+          const { data: galleryData, error: galleryError } = await supabase.storage
+            .from('property-images')
+            .upload(path, file);
+          
+          if (galleryError) throw galleryError;
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('property-images')
+            .getPublicUrl(path);
+          
+          uploadedGalleryImages.push({
+            url: publicUrl,
+            alt: file.name.replace(/\.[^/.]+$/, "") // Use filename without extension as alt
+          });
+        }
+      }
+
+      // Keep existing gallery images if editing and no new images uploaded
+      const finalGalleryImages = uploadedGalleryImages.length > 0 
+        ? uploadedGalleryImages 
+        : editingProperty?.images || [];
+      
+      const property = {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        location: formData.get("location") as string,
+        address: formData.get("address") as string,
+        price_per_night: parseFloat(formData.get("price_per_night") as string),
+        max_guests: parseInt(formData.get("max_guests") as string),
+        bedrooms: parseInt(formData.get("bedrooms") as string),
+        bathrooms: parseInt(formData.get("bathrooms") as string),
+        latitude: formData.get("latitude") ? parseFloat(formData.get("latitude") as string) : null,
+        longitude: formData.get("longitude") ? parseFloat(formData.get("longitude") as string) : null,
+        rating: formData.get("rating") ? parseFloat(formData.get("rating") as string) : 4.5,
+        image_url: mainImageUrl,
+        images: finalGalleryImages.length > 0 ? finalGalleryImages : null,
+        amenities: formData.get("amenities") 
+          ? (formData.get("amenities") as string).split(",").map(a => a.trim())
+          : [],
+        owner_id: ownerId === "none" ? null : ownerId,
+        status: formData.get("status") as string || "active",
+        available_from: formData.get("available_from") as string || null,
+        available_until: formData.get("available_until") as string || null,
+      };
+
+      saveMutation.mutate(property);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erreur d'upload",
+        description: error.message,
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -388,31 +436,35 @@ export const PropertiesManager = () => {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="image_url">URL de l'image principale</Label>
+                  <div className="col-span-2">
+                    <Label htmlFor="main_image">Image principale</Label>
                     <Input
-                      id="image_url"
-                      name="image_url"
-                      type="url"
-                      defaultValue={editingProperty?.image_url}
+                      id="main_image"
+                      name="main_image"
+                      type="file"
+                      accept="image/*"
                     />
+                    {editingProperty?.image_url && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Image actuelle : {editingProperty.image_url.split('/').pop()}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2">
-                    <Label htmlFor="images">Galerie d'images (format: url1|alt1, url2|alt2)</Label>
-                    <Textarea
-                      id="images"
-                      name="images"
-                      defaultValue={
-                        editingProperty?.images
-                          ? (editingProperty.images as Array<{ url: string; alt: string }>)
-                              .map(img => `${img.url}|${img.alt}`)
-                              .join(", ")
-                          : ""
-                      }
-                      placeholder="https://exemple.com/img1.jpg|Salon, https://exemple.com/img2.jpg|Chambre"
-                      rows={3}
+                    <Label htmlFor="gallery_images">Galerie d'images</Label>
+                    <Input
+                      id="gallery_images"
+                      name="gallery_images"
+                      type="file"
+                      accept="image/*"
+                      multiple
                     />
+                    {editingProperty?.images && Array.isArray(editingProperty.images) && editingProperty.images.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {editingProperty.images.length} image(s) actuellement
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2">
