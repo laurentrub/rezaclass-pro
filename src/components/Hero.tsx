@@ -46,8 +46,8 @@ export const Hero = () => {
         </p>
 
         {/* Search Bar */}
-        <div className="bg-card rounded-2xl shadow-2xl p-6 max-w-5xl mx-auto backdrop-blur-sm bg-card/95">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-card rounded-2xl shadow-2xl p-6 max-w-6xl mx-auto backdrop-blur-sm bg-card/95">
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr,2fr,1.5fr,auto] gap-4">
             <SearchDestination
               value={searchCriteria.destination}
               onChange={(destination) =>
