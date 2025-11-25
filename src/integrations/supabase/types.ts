@@ -14,13 +14,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_periods: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          property_id: string | null
+          reason: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          property_id?: string | null
+          reason?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          property_id?: string | null
+          reason?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_periods_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
+          admin_commission: number | null
+          admin_notes: string | null
           check_in_date: string
           check_out_date: string
           created_at: string
           guests: number
           id: string
+          owner_payout_amount: number | null
+          payment_status: string | null
           property_id: string
           special_requests: string | null
           status: string
@@ -29,11 +68,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_commission?: number | null
+          admin_notes?: string | null
           check_in_date: string
           check_out_date: string
           created_at?: string
           guests: number
           id?: string
+          owner_payout_amount?: number | null
+          payment_status?: string | null
           property_id: string
           special_requests?: string | null
           status?: string
@@ -42,11 +85,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_commission?: number | null
+          admin_notes?: string | null
           check_in_date?: string
           check_out_date?: string
           created_at?: string
           guests?: number
           id?: string
+          owner_payout_amount?: number | null
+          payment_status?: string | null
           property_id?: string
           special_requests?: string | null
           status?: string
@@ -95,6 +142,8 @@ export type Database = {
         Row: {
           address: string | null
           amenities: Json | null
+          available_from: string | null
+          available_until: string | null
           bathrooms: number | null
           bedrooms: number | null
           created_at: string
@@ -106,13 +155,17 @@ export type Database = {
           location: string
           longitude: number | null
           max_guests: number
+          owner_id: string | null
           price_per_night: number
           rating: number | null
+          status: string | null
           title: string
         }
         Insert: {
           address?: string | null
           amenities?: Json | null
+          available_from?: string | null
+          available_until?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
           created_at?: string
@@ -124,13 +177,17 @@ export type Database = {
           location: string
           longitude?: number | null
           max_guests: number
+          owner_id?: string | null
           price_per_night: number
           rating?: number | null
+          status?: string | null
           title: string
         }
         Update: {
           address?: string | null
           amenities?: Json | null
+          available_from?: string | null
+          available_until?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
           created_at?: string
@@ -142,9 +199,52 @@ export type Database = {
           location?: string
           longitude?: number | null
           max_guests?: number
+          owner_id?: string | null
           price_per_night?: number
           rating?: number | null
+          status?: string | null
           title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "property_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_owners: {
+        Row: {
+          bank_details: Json | null
+          commission_rate: number | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_details?: Json | null
+          commission_rate?: number | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_details?: Json | null
+          commission_rate?: number | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
