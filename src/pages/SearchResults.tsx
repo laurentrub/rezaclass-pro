@@ -118,6 +118,7 @@ const SearchResults = () => {
             {properties.map((property) => (
               <PropertyCard
                 key={property.id}
+                id={property.id}
                 image={property.image_url || ""}
                 title={property.title}
                 location={property.location}
