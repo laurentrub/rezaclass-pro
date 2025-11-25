@@ -93,33 +93,54 @@ export type Database = {
       }
       properties: {
         Row: {
+          address: string | null
+          amenities: Json | null
+          bathrooms: number | null
+          bedrooms: number | null
           created_at: string
           description: string | null
           id: string
           image_url: string | null
+          images: Json | null
+          latitude: number | null
           location: string
+          longitude: number | null
           max_guests: number
           price_per_night: number
           rating: number | null
           title: string
         }
         Insert: {
+          address?: string | null
+          amenities?: Json | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: Json | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           max_guests: number
           price_per_night: number
           rating?: number | null
           title: string
         }
         Update: {
+          address?: string | null
+          amenities?: Json | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: Json | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           max_guests?: number
           price_per_night?: number
           rating?: number | null
