@@ -34,7 +34,7 @@ export const BookingsManager = () => {
               commission_rate
             )
           ),
-          profiles (full_name, email)
+          profiles (full_name, email, phone)
         `)
         .order("created_at", { ascending: false });
 
@@ -229,6 +229,9 @@ export const BookingsManager = () => {
                     <p className="font-semibold">Client</p>
                     <p>{booking.profiles?.full_name}</p>
                     <p className="text-muted-foreground">{booking.profiles?.email}</p>
+                    {booking.profiles?.phone && (
+                      <p className="text-muted-foreground">{booking.profiles.phone}</p>
+                    )}
                   </div>
                   <div>
                     <p className="font-semibold">Dates</p>
