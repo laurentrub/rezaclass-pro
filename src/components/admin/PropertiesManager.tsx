@@ -140,6 +140,15 @@ export const PropertiesManager = () => {
     const formData = new FormData(e.currentTarget);
     
     const ownerId = formData.get("owner_id") as string;
+    const imagesInput = formData.get("images") as string;
+    
+    // Parse images input (format: url1|alt1, url2|alt2)
+    const images = imagesInput
+      ? imagesInput.split(",").map(img => {
+          const [url, alt] = img.trim().split("|");
+          return { url: url?.trim() || "", alt: alt?.trim() || "" };
+        }).filter(img => img.url)
+      : [];
     
     const property = {
       title: formData.get("title") as string,
@@ -152,7 +161,9 @@ export const PropertiesManager = () => {
       bathrooms: parseInt(formData.get("bathrooms") as string),
       latitude: formData.get("latitude") ? parseFloat(formData.get("latitude") as string) : null,
       longitude: formData.get("longitude") ? parseFloat(formData.get("longitude") as string) : null,
+      rating: formData.get("rating") ? parseFloat(formData.get("rating") as string) : 4.5,
       image_url: formData.get("image_url") as string,
+      images: images.length > 0 ? images : null,
       amenities: formData.get("amenities") 
         ? (formData.get("amenities") as string).split(",").map(a => a.trim())
         : [],
@@ -364,8 +375,21 @@ export const PropertiesManager = () => {
                     />
                   </div>
 
-                  <div className="col-span-2">
-                    <Label htmlFor="image_url">URL de l'image</Label>
+                  <div>
+                    <Label htmlFor="rating">Note</Label>
+                    <Input
+                      id="rating"
+                      name="rating"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      defaultValue={editingProperty?.rating || 4.5}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="image_url">URL de l'image principale</Label>
                     <Input
                       id="image_url"
                       name="image_url"
@@ -375,12 +399,29 @@ export const PropertiesManager = () => {
                   </div>
 
                   <div className="col-span-2">
+                    <Label htmlFor="images">Galerie d'images (format: url1|alt1, url2|alt2)</Label>
+                    <Textarea
+                      id="images"
+                      name="images"
+                      defaultValue={
+                        editingProperty?.images
+                          ? (editingProperty.images as Array<{ url: string; alt: string }>)
+                              .map(img => `${img.url}|${img.alt}`)
+                              .join(", ")
+                          : ""
+                      }
+                      placeholder="https://exemple.com/img1.jpg|Salon, https://exemple.com/img2.jpg|Chambre"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="col-span-2">
                     <Label htmlFor="amenities">Équipements (séparés par des virgules)</Label>
                     <Input
                       id="amenities"
                       name="amenities"
                       defaultValue={editingProperty?.amenities?.join(", ")}
-                      placeholder="WiFi, Cuisine équipée, Parking"
+                      placeholder="WiFi, Cuisine équipée, Parking gratuit, Télévision, Lave-linge"
                     />
                   </div>
                 </div>
