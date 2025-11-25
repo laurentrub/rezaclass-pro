@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-villa.jpg";
@@ -8,6 +9,7 @@ import { SearchGuests } from "./search/SearchGuests";
 import { SearchCriteria } from "@/types/search";
 
 export const Hero = () => {
+  const navigate = useNavigate();
   const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({
     destination: null,
     dates: {
@@ -22,8 +24,13 @@ export const Hero = () => {
   });
 
   const handleSearch = () => {
-    console.log("Recherche avec critères:", searchCriteria);
-    // TODO: Implement search functionality
+    const params = new URLSearchParams();
+    if (searchCriteria.destination) {
+      params.set("destination", JSON.stringify(searchCriteria.destination));
+    }
+    params.set("adults", searchCriteria.guests.adults.toString());
+    params.set("children", searchCriteria.guests.children.toString());
+    navigate(`/search?${params.toString()}`);
   };
 
   return (
