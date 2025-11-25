@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertiesManager } from "@/components/admin/PropertiesManager";
 import { BookingsManager } from "@/components/admin/BookingsManager";
+import { PropertyOwnersManager } from "@/components/admin/PropertyOwnersManager";
+import { Dashboard } from "@/components/admin/Dashboard";
 import { Shield } from "lucide-react";
 
 const Admin = () => {
@@ -53,11 +55,17 @@ const Admin = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="properties" className="space-y-6">
+        <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="dashboard">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="properties">Propriétés</TabsTrigger>
             <TabsTrigger value="bookings">Réservations</TabsTrigger>
+            <TabsTrigger value="owners">Propriétaires</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <Dashboard />
+          </TabsContent>
 
           <TabsContent value="properties">
             <PropertiesManager />
@@ -65,6 +73,10 @@ const Admin = () => {
 
           <TabsContent value="bookings">
             <BookingsManager />
+          </TabsContent>
+
+          <TabsContent value="owners">
+            <PropertyOwnersManager />
           </TabsContent>
         </Tabs>
       </section>
