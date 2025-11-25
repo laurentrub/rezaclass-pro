@@ -1,7 +1,9 @@
 import { MapPin, Users, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
+  id?: string;
   image: string;
   title: string;
   location: string;
@@ -10,9 +12,20 @@ interface PropertyCardProps {
   rating: number;
 }
 
-export const PropertyCard = ({ image, title, location, price, guests, rating }: PropertyCardProps) => {
+export const PropertyCard = ({ id, image, title, location, price, guests, rating }: PropertyCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (id) {
+      navigate(`/property/${id}`);
+    }
+  };
+
   return (
-    <Card className="group overflow-hidden border-border hover:shadow-xl transition-all duration-300 cursor-pointer bg-card">
+    <Card 
+      className="group overflow-hidden border-border hover:shadow-xl transition-all duration-300 cursor-pointer bg-card"
+      onClick={handleClick}
+    >
       <div className="relative h-64 overflow-hidden">
         <img 
           src={image} 
