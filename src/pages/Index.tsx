@@ -1,6 +1,9 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { PropertyCard } from "@/components/PropertyCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import apartmentParis from "@/assets/apartment-paris.jpg";
 import cottageCounryside from "@/assets/cottage-countryside.jpg";
@@ -9,64 +12,20 @@ import chaletAlps from "@/assets/chalet-alps.jpg";
 import beachBrittany from "@/assets/beach-brittany.jpg";
 import heroVilla from "@/assets/hero-villa.jpg";
 
-const properties = [
-  {
-    id: 1,
-    image: apartmentParis,
-    title: "Appartement Haussmannien",
-    location: "Paris, Île-de-France",
-    price: 180,
-    guests: 4,
-    rating: 4.9
-  },
-  {
-    id: 2,
-    image: cottageCounryside,
-    title: "Maison de Campagne",
-    location: "Normandie",
-    price: 120,
-    guests: 6,
-    rating: 4.8
-  },
-  {
-    id: 3,
-    image: villaRiviera,
-    title: "Villa avec Piscine",
-    location: "Côte d'Azur",
-    price: 350,
-    guests: 8,
-    rating: 5.0
-  },
-  {
-    id: 4,
-    image: chaletAlps,
-    title: "Chalet de Montagne",
-    location: "Alpes",
-    price: 250,
-    guests: 10,
-    rating: 4.9
-  },
-  {
-    id: 5,
-    image: beachBrittany,
-    title: "Maison de Plage",
-    location: "Bretagne",
-    price: 160,
-    guests: 6,
-    rating: 4.7
-  },
-  {
-    id: 6,
-    image: heroVilla,
-    title: "Villa Provençale",
-    location: "Provence",
-    price: 280,
-    guests: 8,
-    rating: 4.9
-  }
-];
-
 const Index = () => {
+  const { data: properties, isLoading } = useQuery({
+    queryKey: ["properties"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -83,20 +42,32 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {properties.map((property) => (
-            <PropertyCard 
-              key={property.id}
-              id={String(property.id)}
-              image={property.image}
-              title={property.title}
-              location={property.location}
-              price={property.price}
-              guests={property.guests}
-              rating={property.rating}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-64 w-full rounded-xl" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {properties?.map((property) => (
+              <PropertyCard 
+                key={property.id}
+                id={property.id}
+                image={property.image_url || apartmentParis}
+                title={property.title}
+                location={property.location}
+                price={Number(property.price_per_night)}
+                guests={property.max_guests}
+                rating={Number(property.rating) || 4.5}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Footer */}
