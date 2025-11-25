@@ -198,17 +198,12 @@ const Account = () => {
                           </div>
 
                           {booking.status === "pending" && (
-                            <div className="mt-4 p-4 bg-muted rounded-lg">
-                              <p className="font-medium mb-2">Informations de paiement</p>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                Pour confirmer votre réservation, veuillez effectuer un virement bancaire à :
+                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                              <p className="font-medium mb-2 text-blue-900">Confirmation en cours</p>
+                              <p className="text-sm text-blue-700">
+                                Un email contenant les instructions de paiement vous a été envoyé à votre adresse email. 
+                                Veuillez consulter votre boîte de réception pour finaliser votre réservation.
                               </p>
-                              <div className="text-sm space-y-1">
-                                <p><strong>IBAN:</strong> FR76 1234 5678 9012 3456 7890 123</p>
-                                <p><strong>BIC:</strong> BNPAFRPPXXX</p>
-                                <p><strong>Montant:</strong> {booking.total_price}€</p>
-                                <p><strong>Référence:</strong> RES-{booking.id.slice(0, 8).toUpperCase()}</p>
-                              </div>
                             </div>
                           )}
 
