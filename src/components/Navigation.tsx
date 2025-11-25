@@ -1,10 +1,12 @@
-import { Home, Heart, User } from "lucide-react";
+import { Home, Heart, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
 
 export const Navigation = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
 
   return (
@@ -26,6 +28,17 @@ export const Navigation = () => {
             <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
               Contact
             </a>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="flex items-center gap-2"
+              >
+                <Shield size={16} />
+                Admin
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
