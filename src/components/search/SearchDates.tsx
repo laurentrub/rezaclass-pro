@@ -82,26 +82,26 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-[400px] p-0" align="start" sideOffset={8}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as "flexible" | "specific")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 m-2">
             <TabsTrigger value="flexible">Flexibles</TabsTrigger>
             <TabsTrigger value="specific">Spécifiques</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="flexible" className="p-4 space-y-4">
+          <TabsContent value="flexible" className="p-6 space-y-6 m-0">
             <div>
-              <h4 className="text-sm font-medium mb-3">Durée du séjour</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <h4 className="text-sm font-semibold mb-3">Durée du séjour</h4>
+              <div className="grid grid-cols-2 gap-3">
                 {DURATIONS.map((duration) => (
                   <button
                     key={duration.value}
                     onClick={() => handleDurationChange(duration.value)}
                     className={cn(
-                      "px-4 py-2 rounded-md border transition-colors text-sm",
+                      "px-4 py-3 rounded-lg border-2 transition-all text-sm font-medium",
                       value.duration === duration.value
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background hover:bg-accent border-border"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-background hover:bg-accent border-border hover:border-primary/30"
                     )}
                   >
                     {duration.label}
@@ -111,17 +111,17 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-3">Mois</h4>
-              <div className="grid grid-cols-3 gap-2">
+              <h4 className="text-sm font-semibold mb-3">Mois</h4>
+              <div className="grid grid-cols-4 gap-2">
                 {MONTHS.map((month) => (
                   <button
                     key={month}
                     onClick={() => handleMonthToggle(month)}
                     className={cn(
-                      "px-3 py-2 rounded-md border transition-colors text-sm",
+                      "px-2 py-2 rounded-lg border-2 transition-all text-xs font-medium",
                       value.months?.includes(month)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background hover:bg-accent border-border"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-background hover:bg-accent border-border hover:border-primary/30"
                     )}
                   >
                     {month.slice(0, 3)}
@@ -131,23 +131,29 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
             </div>
           </TabsContent>
           
-          <TabsContent value="specific" className="p-4">
+          <TabsContent value="specific" className="p-6 m-0">
             <div className="space-y-4">
-              <Calendar
-                mode="single"
-                selected={value.checkIn}
-                onSelect={(date) => handleSpecificDateChange(date, value.checkOut)}
-                disabled={(date) => date < new Date()}
-                className="pointer-events-auto"
-              />
-              {value.checkIn && (
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Date d'arrivée</h4>
                 <Calendar
                   mode="single"
-                  selected={value.checkOut}
-                  onSelect={(date) => handleSpecificDateChange(value.checkIn, date)}
-                  disabled={(date) => date < (value.checkIn || new Date())}
-                  className="pointer-events-auto"
+                  selected={value.checkIn}
+                  onSelect={(date) => handleSpecificDateChange(date, value.checkOut)}
+                  disabled={(date) => date < new Date()}
+                  className="pointer-events-auto rounded-md border"
                 />
+              </div>
+              {value.checkIn && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">Date de départ</h4>
+                  <Calendar
+                    mode="single"
+                    selected={value.checkOut}
+                    onSelect={(date) => handleSpecificDateChange(value.checkIn, date)}
+                    disabled={(date) => date < (value.checkIn || new Date())}
+                    className="pointer-events-auto rounded-md border"
+                  />
+                </div>
               )}
             </div>
           </TabsContent>
