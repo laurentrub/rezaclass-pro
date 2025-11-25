@@ -1,9 +1,31 @@
-import { Search, MapPin, Calendar } from "lucide-react";
+import { useState } from "react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import heroImage from "@/assets/hero-villa.jpg";
+import { SearchDestination } from "./search/SearchDestination";
+import { SearchDates } from "./search/SearchDates";
+import { SearchGuests } from "./search/SearchGuests";
+import { SearchCriteria } from "@/types/search";
 
 export const Hero = () => {
+  const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({
+    destination: null,
+    dates: {
+      mode: "flexible",
+      duration: "flexible",
+      months: [],
+    },
+    guests: {
+      adults: 2,
+      children: 0,
+    },
+  });
+
+  const handleSearch = () => {
+    console.log("Recherche avec critères:", searchCriteria);
+    // TODO: Implement search functionality
+  };
+
   return (
     <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -24,23 +46,32 @@ export const Hero = () => {
         </p>
 
         {/* Search Bar */}
-        <div className="bg-card rounded-2xl shadow-2xl p-6 max-w-4xl mx-auto backdrop-blur-sm bg-card/95">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 bg-background rounded-lg px-4 py-3 border border-border">
-              <MapPin className="text-muted-foreground" size={20} />
-              <Input 
-                placeholder="Destination" 
-                className="border-0 focus-visible:ring-0 p-0 h-auto bg-transparent"
-              />
-            </div>
-            <div className="flex items-center gap-3 bg-background rounded-lg px-4 py-3 border border-border">
-              <Calendar className="text-muted-foreground" size={20} />
-              <Input 
-                placeholder="Dates" 
-                className="border-0 focus-visible:ring-0 p-0 h-auto bg-transparent"
-              />
-            </div>
-            <Button variant="hero" size="lg" className="w-full">
+        <div className="bg-card rounded-2xl shadow-2xl p-6 max-w-5xl mx-auto backdrop-blur-sm bg-card/95">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <SearchDestination
+              value={searchCriteria.destination}
+              onChange={(destination) =>
+                setSearchCriteria({ ...searchCriteria, destination })
+              }
+            />
+            <SearchDates
+              value={searchCriteria.dates}
+              onChange={(dates) =>
+                setSearchCriteria({ ...searchCriteria, dates })
+              }
+            />
+            <SearchGuests
+              value={searchCriteria.guests}
+              onChange={(guests) =>
+                setSearchCriteria({ ...searchCriteria, guests })
+              }
+            />
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="w-full"
+              onClick={handleSearch}
+            >
               <Search size={20} />
               Rechercher
             </Button>
