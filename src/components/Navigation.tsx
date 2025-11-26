@@ -1,4 +1,4 @@
-import { Home, Heart, User, Shield, Menu, MessageCircle, Globe } from "lucide-react";
+import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -11,11 +11,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { useLocaleSettings, Language, Currency } from "@/hooks/useLocaleSettings";
+import { useState } from "react";
 
 export const Navigation = () => {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
+  const { language, currency, setLanguage, setCurrency } = useLocaleSettings();
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
+
+  const languages: Language[] = ['FR', 'EN'];
+  const currencies: Currency[] = ['€', '$', '£'];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
@@ -74,13 +82,71 @@ export const Navigation = () => {
                   <span>Contactez-nous</span>
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  className="justify-start gap-3 h-auto py-3"
-                >
-                  <Globe size={20} />
-                  <span>FR / €</span>
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 h-auto py-3 w-full"
+                    onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  >
+                    <Globe size={20} />
+                    <span>Langue: {language}</span>
+                  </Button>
+                  
+                  {showLanguageMenu && (
+                    <div className="ml-8 space-y-1">
+                      {languages.map((lang) => (
+                        <Button
+                          key={lang}
+                          variant="ghost"
+                          size="sm"
+                          className="justify-start gap-2 w-full"
+                          onClick={() => {
+                            setLanguage(lang);
+                            setShowLanguageMenu(false);
+                          }}
+                        >
+                          {language === lang && <Check size={16} />}
+                          <span className={language === lang ? "font-medium" : ""}>
+                            {lang}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 h-auto py-3 w-full"
+                    onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
+                  >
+                    <Globe size={20} />
+                    <span>Devise: {currency}</span>
+                  </Button>
+                  
+                  {showCurrencyMenu && (
+                    <div className="ml-8 space-y-1">
+                      {currencies.map((curr) => (
+                        <Button
+                          key={curr}
+                          variant="ghost"
+                          size="sm"
+                          className="justify-start gap-2 w-full"
+                          onClick={() => {
+                            setCurrency(curr);
+                            setShowCurrencyMenu(false);
+                          }}
+                        >
+                          {currency === curr && <Check size={16} />}
+                          <span className={currency === curr ? "font-medium" : ""}>
+                            {curr}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 
                 {isAdmin && (
                   <>
