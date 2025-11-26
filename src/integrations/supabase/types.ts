@@ -111,6 +111,35 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -146,6 +175,9 @@ export type Database = {
           available_until: string | null
           bathrooms: number | null
           bedrooms: number | null
+          check_in_time: string | null
+          check_out_time: string | null
+          cleaning_fee: number | null
           created_at: string
           description: string | null
           id: string
@@ -156,8 +188,11 @@ export type Database = {
           longitude: number | null
           max_guests: number
           owner_id: string | null
+          pets_allowed: boolean | null
           price_per_night: number
           rating: number | null
+          service_fee: number | null
+          smoking_allowed: boolean | null
           status: string | null
           title: string
         }
@@ -168,6 +203,9 @@ export type Database = {
           available_until?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          cleaning_fee?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -178,8 +216,11 @@ export type Database = {
           longitude?: number | null
           max_guests: number
           owner_id?: string | null
+          pets_allowed?: boolean | null
           price_per_night: number
           rating?: number | null
+          service_fee?: number | null
+          smoking_allowed?: boolean | null
           status?: string | null
           title: string
         }
@@ -190,6 +231,9 @@ export type Database = {
           available_until?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          cleaning_fee?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -200,8 +244,11 @@ export type Database = {
           longitude?: number | null
           max_guests?: number
           owner_id?: string | null
+          pets_allowed?: boolean | null
           price_per_night?: number
           rating?: number | null
+          service_fee?: number | null
+          smoking_allowed?: boolean | null
           status?: string | null
           title?: string
         }
@@ -222,6 +269,7 @@ export type Database = {
           created_at: string | null
           email: string
           id: string
+          is_verified: boolean | null
           name: string
           phone: string | null
           updated_at: string | null
@@ -232,6 +280,7 @@ export type Database = {
           created_at?: string | null
           email: string
           id?: string
+          is_verified?: boolean | null
           name: string
           phone?: string | null
           updated_at?: string | null
@@ -242,11 +291,47 @@ export type Database = {
           created_at?: string | null
           email?: string
           id?: string
+          is_verified?: boolean | null
           name?: string
           phone?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          property_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          property_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
