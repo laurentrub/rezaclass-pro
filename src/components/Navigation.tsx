@@ -1,8 +1,16 @@
-import { Home, Heart, User, Shield } from "lucide-react";
+import { Home, Heart, User, Shield, Menu, MessageCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
 export const Navigation = () => {
   const { user } = useAuth();
@@ -18,45 +26,78 @@ export const Navigation = () => {
             <span className="text-2xl font-bold text-foreground">VacancesFrance</span>
           </a>
           
-          <div className="hidden md:flex items-center gap-6">
-            <a href="/" className="text-foreground hover:text-primary transition-colors font-medium">
-              Destinations
-            </a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-              À propos
-            </a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
-              Contact
-            </a>
-            {isAdmin && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/admin")}
-                className="flex items-center gap-2"
-              >
-                <Shield size={16} />
-                Admin
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="ml-auto">
+                <Menu size={24} />
               </Button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon">
-              <Heart size={20} />
-            </Button>
-            {user ? (
-              <Button variant="default" onClick={() => navigate("/account")}>
-                <User size={20} />
-                Mon Compte
-              </Button>
-            ) : (
-              <Button variant="default" onClick={() => navigate("/auth")}>
-                <User size={20} />
-                Connexion
-              </Button>
-            )}
-          </div>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <SheetHeader>
+                <SheetTitle className="text-left">Menu</SheetTitle>
+              </SheetHeader>
+              
+              <div className="flex flex-col gap-4 mt-6">
+                {user ? (
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 h-auto py-3"
+                    onClick={() => navigate("/account")}
+                  >
+                    <User size={20} />
+                    <span>Mon Compte</span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 h-auto py-3"
+                    onClick={() => navigate("/auth")}
+                  >
+                    <User size={20} />
+                    <span>Connexion</span>
+                  </Button>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  className="justify-start gap-3 h-auto py-3"
+                >
+                  <Heart size={20} />
+                  <span>Mes favoris</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  className="justify-start gap-3 h-auto py-3"
+                >
+                  <MessageCircle size={20} />
+                  <span>Contactez-nous</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  className="justify-start gap-3 h-auto py-3"
+                >
+                  <Globe size={20} />
+                  <span>FR / €</span>
+                </Button>
+                
+                {isAdmin && (
+                  <>
+                    <Separator className="my-2" />
+                    <Button
+                      variant="ghost"
+                      className="justify-start gap-3 h-auto py-3"
+                      onClick={() => navigate("/admin")}
+                    >
+                      <Shield size={20} />
+                      <span>Administration</span>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>
