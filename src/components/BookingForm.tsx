@@ -14,9 +14,18 @@ interface BookingFormProps {
   pricePerNight: number;
   maxGuests: number;
   bookedDates: Date[];
+  cleaningFee?: number;
+  serviceFee?: number;
 }
 
-export const BookingForm = ({ propertyId, pricePerNight, maxGuests, bookedDates }: BookingFormProps) => {
+export const BookingForm = ({ 
+  propertyId, 
+  pricePerNight, 
+  maxGuests, 
+  bookedDates,
+  cleaningFee = 0,
+  serviceFee = 0
+}: BookingFormProps) => {
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [specialRequests, setSpecialRequests] = useState("");
@@ -26,10 +35,14 @@ export const BookingForm = ({ propertyId, pricePerNight, maxGuests, bookedDates 
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const calculateTotalPrice = () => {
-    if (!checkIn || !checkOut) return 0;
+  const calculatePrices = () => {
+    if (!checkIn || !checkOut) {
+      return { nights: 0, nightsPrice: 0, totalPrice: 0 };
+    }
     const nights = differenceInDays(checkOut, checkIn);
-    return nights * pricePerNight;
+    const nightsPrice = nights * pricePerNight;
+    const totalPrice = nightsPrice + cleaningFee + serviceFee;
+    return { nights, nightsPrice, totalPrice };
   };
 
   const handleBooking = async () => {
@@ -63,7 +76,7 @@ export const BookingForm = ({ propertyId, pricePerNight, maxGuests, bookedDates 
           check_in_date: checkIn.toISOString().split('T')[0],
           check_out_date: checkOut.toISOString().split('T')[0],
           guests: maxGuests,
-          total_price: calculateTotalPrice(),
+          total_price: calculatePrices().totalPrice,
           status: "pending",
           special_requests: specialRequests || null,
         })
@@ -102,7 +115,7 @@ export const BookingForm = ({ propertyId, pricePerNight, maxGuests, bookedDates 
     }
   };
 
-  const totalPrice = calculateTotalPrice();
+  const { nights, nightsPrice, totalPrice } = calculatePrices();
 
   return (
     <div className="space-y-6">
@@ -132,9 +145,21 @@ export const BookingForm = ({ propertyId, pricePerNight, maxGuests, bookedDates 
       {checkIn && checkOut && (
         <div className="border-t pt-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span>{pricePerNight}€ × {differenceInDays(checkOut, checkIn)} nuits</span>
-            <span>{totalPrice}€</span>
+            <span>{pricePerNight}€ × {nights} nuits</span>
+            <span>{nightsPrice}€</span>
           </div>
+          {cleaningFee > 0 && (
+            <div className="flex justify-between text-sm">
+              <span>Frais de ménage</span>
+              <span>{cleaningFee}€</span>
+            </div>
+          )}
+          {serviceFee > 0 && (
+            <div className="flex justify-between text-sm">
+              <span>Frais de service</span>
+              <span>{serviceFee}€</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold text-lg border-t pt-2">
             <span>Total</span>
             <span>{totalPrice}€</span>

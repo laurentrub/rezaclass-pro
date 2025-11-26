@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { PropertyMap } from "@/components/property/PropertyMap";
+import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
+import { PropertyActions } from "@/components/property/PropertyActions";
+import { PropertyHighlights } from "@/components/property/PropertyHighlights";
+import { HouseRules } from "@/components/property/HouseRules";
+import { OwnerInfo } from "@/components/property/OwnerInfo";
+import { PropertyReviews } from "@/components/property/PropertyReviews";
+import { SimilarProperties } from "@/components/property/SimilarProperties";
+import { MobileBookingBar } from "@/components/property/MobileBookingBar";
 import { BookingForm } from "@/components/BookingForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -112,23 +120,24 @@ const PropertyDetail = () => {
 
   const amenities = property.amenities as string[] || [];
 
+  const scrollToBooking = () => {
+    const bookingElement = document.getElementById("booking-form");
+    bookingElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <Navigation />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
-          <ChevronLeft size={20} />
-          Retour
-        </Button>
+        {/* Breadcrumb */}
+        <PropertyBreadcrumb location={property.location} title={property.title} />
 
-        {/* Gallery */}
-        <PropertyGallery images={images} title={property.title} />
+        {/* Gallery with Actions */}
+        <div className="relative">
+          <PropertyGallery images={images} title={property.title} />
+          <PropertyActions propertyId={property.id} title={property.title} />
+        </div>
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
@@ -137,7 +146,7 @@ const PropertyDetail = () => {
             {/* Title and Quick Info */}
             <div>
               <h1 className="text-4xl font-bold mb-2">{property.title}</h1>
-              <div className="flex items-center gap-4 text-muted-foreground">
+              <div className="flex items-center gap-4 text-muted-foreground mb-4">
                 <div className="flex items-center gap-1">
                   <Star className="fill-yellow-400 text-yellow-400" size={16} />
                   <span className="font-medium text-foreground">{property.rating}</span>
@@ -147,24 +156,25 @@ const PropertyDetail = () => {
                   <span>{property.location}</span>
                 </div>
               </div>
-            </div>
+              
+              {/* Property Details */}
+              <div className="flex gap-6 mb-4">
+                <div className="flex items-center gap-2">
+                  <Users size={20} />
+                  <span>{property.max_guests} voyageurs</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Bed size={20} />
+                  <span>{property.bedrooms || 1} chambres</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Bath size={20} />
+                  <span>{property.bathrooms || 1} salles de bain</span>
+                </div>
+              </div>
 
-            <Separator />
-
-            {/* Property Details */}
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Users size={20} />
-                <span>{property.max_guests} voyageurs</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Bed size={20} />
-                <span>{property.bedrooms || 1} chambres</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Bath size={20} />
-                <span>{property.bathrooms || 1} salles de bain</span>
-              </div>
+              {/* Highlights */}
+              <PropertyHighlights amenities={amenities} />
             </div>
 
             <Separator />
@@ -180,9 +190,20 @@ const PropertyDetail = () => {
 
             <Separator />
 
+            {/* House Rules */}
+            <HouseRules
+              checkInTime={property.check_in_time || "16:00"}
+              checkOutTime={property.check_out_time || "10:00"}
+              petsAllowed={property.pets_allowed || false}
+              smokingAllowed={property.smoking_allowed || false}
+              maxGuests={property.max_guests}
+            />
+
+            <Separator />
+
             {/* Amenities */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Équipements</h2>
+              <h2 className="text-2xl font-bold mb-4">Tous les équipements</h2>
               <div className="grid grid-cols-2 gap-4">
                 {amenities.map((amenity, index) => {
                   const Icon = AMENITY_ICONS[amenity] || Wifi;
@@ -198,33 +219,59 @@ const PropertyDetail = () => {
 
             <Separator />
 
+            {/* Owner Info */}
+            <OwnerInfo ownerId={property.owner_id} />
+
+            <Separator />
+
             {/* Map */}
             {property.latitude && property.longitude && (
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Localisation</h2>
-                <PropertyMap
-                  latitude={Number(property.latitude)}
-                  longitude={Number(property.longitude)}
-                  title={property.title}
-                  address={property.address || property.location}
-                />
-              </div>
+              <>
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Localisation</h2>
+                  <PropertyMap
+                    latitude={Number(property.latitude)}
+                    longitude={Number(property.longitude)}
+                    title={property.title}
+                    address={property.address || property.location}
+                  />
+                </div>
+                <Separator />
+              </>
             )}
+
+            {/* Reviews */}
+            <PropertyReviews propertyId={property.id} />
           </div>
 
           {/* Right Column - Booking Card */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <Card className="p-6">
+            <Card className="p-6" id="booking-form">
               <BookingForm 
                 propertyId={property.id}
                 pricePerNight={Number(property.price_per_night)}
                 maxGuests={property.max_guests}
                 bookedDates={bookedDates}
+                cleaningFee={Number(property.cleaning_fee) || 0}
+                serviceFee={Number(property.service_fee) || 0}
               />
             </Card>
           </div>
         </div>
+
+        {/* Similar Properties */}
+        <SimilarProperties
+          currentPropertyId={property.id}
+          location={property.location}
+          pricePerNight={Number(property.price_per_night)}
+        />
       </div>
+
+      {/* Mobile Booking Bar */}
+      <MobileBookingBar
+        pricePerNight={Number(property.price_per_night)}
+        onBookClick={scrollToBooking}
+      />
 
       {/* Footer */}
       <footer className="bg-muted mt-16 py-12">
