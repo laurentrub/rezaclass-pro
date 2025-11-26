@@ -7,6 +7,7 @@ import { PropertyMap } from "@/components/property/PropertyMap";
 import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
 import { PropertyActions } from "@/components/property/PropertyActions";
 import { PropertyHighlights } from "@/components/property/PropertyHighlights";
+import { PropertyTabNavigation } from "@/components/property/PropertyTabNavigation";
 import { HouseRules } from "@/components/property/HouseRules";
 import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { SimilarProperties } from "@/components/property/SimilarProperties";
@@ -138,12 +139,15 @@ const PropertyDetail = () => {
           <PropertyActions propertyId={property.id} title={property.title} />
         </div>
 
+        {/* Tab Navigation */}
+        <PropertyTabNavigation />
+
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
           {/* Left Column - Property Info */}
           <div className="lg:col-span-2 space-y-8">
             {/* Title and Quick Info */}
-            <div>
+            <div id="overview">
               <h1 className="text-4xl font-bold mb-2">{property.title}</h1>
               <div className="flex items-center gap-4 text-muted-foreground mb-4">
                 <div className="flex items-center gap-1">
@@ -201,7 +205,7 @@ const PropertyDetail = () => {
             <Separator />
 
             {/* Amenities */}
-            <div>
+            <div id="amenities">
               <h2 className="text-2xl font-bold mb-4">Tous les équipements</h2>
               <div className="grid grid-cols-2 gap-4">
                 {amenities.map((amenity, index) => {
@@ -221,7 +225,7 @@ const PropertyDetail = () => {
             {/* Map */}
             {property.latitude && property.longitude && (
               <>
-                <div>
+                <div id="location">
                   <h2 className="text-2xl font-bold mb-4">Localisation</h2>
                   <PropertyMap
                     latitude={Number(property.latitude)}
@@ -235,7 +239,9 @@ const PropertyDetail = () => {
             )}
 
             {/* Reviews */}
-            <PropertyReviews propertyId={property.id} />
+            <div id="reviews">
+              <PropertyReviews propertyId={property.id} />
+            </div>
           </div>
 
           {/* Right Column - Booking Card */}
