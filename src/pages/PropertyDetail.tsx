@@ -8,7 +8,6 @@ import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
 import { PropertyActions } from "@/components/property/PropertyActions";
 import { PropertyHighlights } from "@/components/property/PropertyHighlights";
 import { HouseRules } from "@/components/property/HouseRules";
-import { OwnerInfo } from "@/components/property/OwnerInfo";
 import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { SimilarProperties } from "@/components/property/SimilarProperties";
 import { MobileBookingBar } from "@/components/property/MobileBookingBar";
@@ -216,11 +215,6 @@ const PropertyDetail = () => {
                 })}
               </div>
             </div>
-
-            <Separator />
-
-            {/* Owner Info */}
-            <OwnerInfo ownerId={property.owner_id} />
 
             <Separator />
 
