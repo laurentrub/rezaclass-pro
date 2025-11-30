@@ -75,6 +75,38 @@ export const PaymentProofUpload = ({ bookingId, onUploadComplete }: PaymentProof
 
       if (updateError) throw updateError;
 
+      // Send notification to admin
+      try {
+        const { data: bookingData } = await supabase
+          .from('bookings')
+          .select('*, properties(title)')
+          .eq('id', bookingId)
+          .single();
+
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', user.id)
+          .single();
+
+        if (bookingData) {
+          await supabase.functions.invoke('send-payment-proof-notification', {
+            body: {
+              bookingId: bookingData.id,
+              customerName: profileData?.full_name || 'Client',
+              customerEmail: profileData?.email || '',
+              propertyTitle: bookingData.properties?.title || '',
+              checkInDate: bookingData.check_in_date,
+              totalPrice: bookingData.total_price,
+              paymentProofUrl: publicUrl,
+            },
+          });
+        }
+      } catch (notifError) {
+        console.error('Error sending admin notification:', notifError);
+        // Don't throw - the upload was successful even if notification failed
+      }
+
       toast.success("Justificatif envoyé avec succès ! Nous validerons votre paiement sous 24-48h.");
       setSelectedFile(null);
       onUploadComplete();
