@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { addDays, isSameDay, isWithinInterval } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import { addDays, isSameDay, isWithinInterval, addMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import "react-day-picker/dist/style.css";
 
 interface AvailabilityCalendarProps {
   bookedDates?: Date[];
@@ -18,6 +21,7 @@ export const AvailabilityCalendar = ({
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [hoveredDate, setHoveredDate] = useState<Date>();
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
   const isDateBooked = (date: Date) => {
     return bookedDates.some((bookedDate) => isSameDay(date, bookedDate));
@@ -31,95 +35,174 @@ export const AvailabilityCalendar = ({
     return isDateBooked(date) || isDateBlocked(date);
   };
 
-  const isDateInRange = (date: Date) => {
-    if (!checkIn || !hoveredDate) return false;
-    if (hoveredDate < checkIn) return false;
-    return isWithinInterval(date, { start: checkIn, end: hoveredDate });
+  const allUnavailableDates = [...bookedDates, ...blockedDates];
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth((prev) => addMonths(prev, -1));
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-
-    // If date is unavailable (booked or blocked), do nothing
-    if (isDateUnavailable(date)) return;
-
-    // If no check-in date or both dates are set, start new selection
-    if (!checkIn || (checkIn && checkOut)) {
-      setCheckIn(date);
-      setCheckOut(undefined);
-      onSelectDates?.(date, undefined);
-    } else {
-      // If check-in is set and new date is after check-in
-      if (date > checkIn) {
-        setCheckOut(date);
-        onSelectDates?.(checkIn, date);
-      } else {
-        // If new date is before check-in, swap them
-        setCheckIn(date);
-        setCheckOut(undefined);
-        onSelectDates?.(date, undefined);
-      }
-    }
+  const goToNextMonth = () => {
+    setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-primary" />
-          <span>Sélectionné</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-muted" />
-          <span>Réservé</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-destructive/20 border-2 border-destructive" />
-          <span>Bloqué</span>
-        </div>
+    <div className="space-y-6">
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <p className="text-sm text-orange-800">
+          Choisissez la période du séjour pour avoir des prix plus précis
+        </p>
       </div>
 
-      <Calendar
-        mode="single"
-        selected={checkIn}
-        onSelect={handleDateSelect}
-        disabled={(date) => date < new Date() || isDateUnavailable(date)}
-        locale={fr}
-        className={cn("rounded-md border pointer-events-auto")}
-        modifiers={{
-          booked: bookedDates,
-          blocked: blockedDates,
-          checkIn: checkIn ? [checkIn] : [],
-          checkOut: checkOut ? [checkOut] : [],
-          inRange: (date) => isDateInRange(date),
-        }}
-        modifiersStyles={{
-          booked: {
-            backgroundColor: "hsl(var(--muted))",
-            color: "hsl(var(--muted-foreground))",
-            textDecoration: "line-through",
-          },
-          blocked: {
-            backgroundColor: "hsl(var(--destructive) / 0.2)",
-            color: "hsl(var(--destructive))",
-            border: "2px solid hsl(var(--destructive))",
-            fontWeight: "bold",
-          },
-          checkIn: {
-            backgroundColor: "hsl(var(--primary))",
-            color: "hsl(var(--primary-foreground))",
-          },
-          checkOut: {
-            backgroundColor: "hsl(var(--primary))",
-            color: "hsl(var(--primary-foreground))",
-          },
-          inRange: {
-            backgroundColor: "hsl(var(--primary) / 0.2)",
-          },
-        }}
-        onDayMouseEnter={setHoveredDate}
-        onDayMouseLeave={() => setHoveredDate(undefined)}
-      />
+      <div className="relative">
+        {/* Navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goToPreviousMonth}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goToNextMonth}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Double Month Calendar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <DayPicker
+            mode="range"
+            selected={
+              checkIn && checkOut
+                ? { from: checkIn, to: checkOut }
+                : checkIn
+                ? { from: checkIn, to: checkIn }
+                : undefined
+            }
+            onSelect={(range) => {
+              if (range?.from) {
+                setCheckIn(range.from);
+                setCheckOut(range.to);
+                onSelectDates?.(range.from, range.to);
+              }
+            }}
+            disabled={(date) => {
+              if (date < new Date()) return true;
+              return isDateUnavailable(date);
+            }}
+            month={currentMonth}
+            numberOfMonths={1}
+            locale={fr}
+            showOutsideDays={false}
+            className="pointer-events-auto"
+            classNames={{
+              months: "flex flex-col",
+              month: "space-y-4",
+              caption: "flex justify-center pt-1 relative items-center mb-4",
+              caption_label: "text-base font-semibold",
+              nav: "hidden",
+              table: "w-full border-collapse",
+              head_row: "flex",
+              head_cell: "text-muted-foreground rounded-md w-12 font-normal text-xs",
+              row: "flex w-full mt-2",
+              cell: cn(
+                "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+                "w-12 h-12"
+              ),
+              day: cn(
+                "h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+              ),
+              day_range_start: "day-range-start rounded-l-md",
+              day_range_end: "day-range-end rounded-r-md",
+              day_selected:
+                "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+              day_today: "bg-accent text-accent-foreground font-semibold",
+              day_outside: "text-muted-foreground opacity-50",
+              day_disabled: "text-muted-foreground opacity-30 line-through",
+              day_range_middle:
+                "aria-selected:bg-accent aria-selected:text-accent-foreground",
+              day_hidden: "invisible",
+            }}
+            modifiers={{
+              unavailable: allUnavailableDates,
+            }}
+            modifiersClassNames={{
+              unavailable: "line-through text-muted-foreground opacity-30 bg-muted/50",
+            }}
+            onDayMouseEnter={setHoveredDate}
+            onDayMouseLeave={() => setHoveredDate(undefined)}
+          />
+
+          <DayPicker
+            mode="range"
+            selected={
+              checkIn && checkOut
+                ? { from: checkIn, to: checkOut }
+                : checkIn
+                ? { from: checkIn, to: checkIn }
+                : undefined
+            }
+            onSelect={(range) => {
+              if (range?.from) {
+                setCheckIn(range.from);
+                setCheckOut(range.to);
+                onSelectDates?.(range.from, range.to);
+              }
+            }}
+            disabled={(date) => {
+              if (date < new Date()) return true;
+              return isDateUnavailable(date);
+            }}
+            month={addMonths(currentMonth, 1)}
+            numberOfMonths={1}
+            locale={fr}
+            showOutsideDays={false}
+            className="pointer-events-auto"
+            classNames={{
+              months: "flex flex-col",
+              month: "space-y-4",
+              caption: "flex justify-center pt-1 relative items-center mb-4",
+              caption_label: "text-base font-semibold",
+              nav: "hidden",
+              table: "w-full border-collapse",
+              head_row: "flex",
+              head_cell: "text-muted-foreground rounded-md w-12 font-normal text-xs",
+              row: "flex w-full mt-2",
+              cell: cn(
+                "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+                "w-12 h-12"
+              ),
+              day: cn(
+                "h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+              ),
+              day_range_start: "day-range-start rounded-l-md",
+              day_range_end: "day-range-end rounded-r-md",
+              day_selected:
+                "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+              day_today: "bg-accent text-accent-foreground font-semibold",
+              day_outside: "text-muted-foreground opacity-50",
+              day_disabled: "text-muted-foreground opacity-30 line-through",
+              day_range_middle:
+                "aria-selected:bg-accent aria-selected:text-accent-foreground",
+              day_hidden: "invisible",
+            }}
+            modifiers={{
+              unavailable: allUnavailableDates,
+            }}
+            modifiersClassNames={{
+              unavailable: "line-through text-muted-foreground opacity-30 bg-muted/50",
+            }}
+            onDayMouseEnter={setHoveredDate}
+            onDayMouseLeave={() => setHoveredDate(undefined)}
+          />
+        </div>
+      </div>
 
       {checkIn && (
         <div className="p-4 bg-muted rounded-lg">
