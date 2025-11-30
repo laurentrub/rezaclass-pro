@@ -35,12 +35,33 @@ export const PropertiesManager = () => {
   const [computedLatitude, setComputedLatitude] = useState<number | null>(null);
   const [computedLongitude, setComputedLongitude] = useState<number | null>(null);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  
+  // Amenities management
+  const standardAmenities = [
+    "WiFi",
+    "Cuisine équipée",
+    "Parking gratuit",
+    "Télévision",
+    "Lave-linge",
+    "Climatisation",
+    "Chauffage",
+    "Lave-vaisselle",
+    "Sèche-linge",
+    "Piscine",
+    "Jardin",
+    "Terrasse/Balcon",
+  ];
+  
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [customAmenities, setCustomAmenities] = useState<string[]>([]);
+  const [newAmenityName, setNewAmenityName] = useState("");
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { isManager } = useAnyAdminRole();
 
-  // Reset address fields when dialog opens/closes
+  // Reset fields when dialog opens/closes
   useEffect(() => {
     if (isDialogOpen) {
       if (editingProperty) {
@@ -52,13 +73,23 @@ export const PropertiesManager = () => {
         setAddressCity(parts[2] || "");
         setComputedLatitude(editingProperty.latitude);
         setComputedLongitude(editingProperty.longitude);
+        
+        // Parse existing amenities
+        const existingAmenities = editingProperty.amenities || [];
+        const standard = existingAmenities.filter((a: string) => standardAmenities.includes(a));
+        const custom = existingAmenities.filter((a: string) => !standardAmenities.includes(a));
+        setSelectedAmenities(standard);
+        setCustomAmenities(custom);
       } else {
         setAddressStreet("");
         setAddressPostalCode("");
         setAddressCity("");
         setComputedLatitude(null);
         setComputedLongitude(null);
+        setSelectedAmenities([]);
+        setCustomAmenities([]);
       }
+      setNewAmenityName("");
     }
   }, [isDialogOpen, editingProperty]);
 
@@ -274,6 +305,9 @@ export const PropertiesManager = () => {
       
       // Build full address from components
       const fullAddress = `${addressStreet}, ${addressPostalCode}, ${addressCity}`;
+      
+      // Combine selected standard amenities and custom amenities
+      const allAmenities = [...selectedAmenities, ...customAmenities];
 
       const property: any = {
         title: formData.get("title") as string,
@@ -289,9 +323,7 @@ export const PropertiesManager = () => {
         rating: formData.get("rating") ? parseFloat(formData.get("rating") as string) : 4.5,
         image_url: mainImageUrl,
         images: finalGalleryImages.length > 0 ? finalGalleryImages : null,
-        amenities: formData.get("amenities") 
-          ? (formData.get("amenities") as string).split(",").map(a => a.trim())
-          : [],
+        amenities: allAmenities,
         owner_id: ownerId === "none" ? null : ownerId,
         status: formData.get("status") as string || "active",
         available_from: formData.get("available_from") as string || null,
@@ -603,13 +635,98 @@ export const PropertiesManager = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <Label htmlFor="amenities">Équipements (séparés par des virgules)</Label>
-                    <Input
-                      id="amenities"
-                      name="amenities"
-                      defaultValue={editingProperty?.amenities?.join(", ")}
-                      placeholder="WiFi, Cuisine équipée, Parking gratuit, Télévision, Lave-linge"
-                    />
+                    <Label className="mb-3 block">Équipements</Label>
+                    
+                    <div className="space-y-4">
+                      {/* Standard amenities */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {standardAmenities.map((amenity) => (
+                          <div key={amenity} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`amenity-${amenity}`}
+                              checked={selectedAmenities.includes(amenity)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAmenities([...selectedAmenities, amenity]);
+                                } else {
+                                  setSelectedAmenities(selectedAmenities.filter(a => a !== amenity));
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label htmlFor={`amenity-${amenity}`} className="text-sm font-normal cursor-pointer">
+                              {amenity}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Custom amenities */}
+                      {customAmenities.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t">
+                          <p className="text-sm font-medium text-muted-foreground">Équipements personnalisés</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {customAmenities.map((amenity, index) => (
+                              <div key={`custom-${index}`} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`custom-amenity-${index}`}
+                                  checked={true}
+                                  readOnly
+                                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <Label htmlFor={`custom-amenity-${index}`} className="text-sm font-normal flex-1">
+                                  {amenity}
+                                </Label>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => {
+                                    setCustomAmenities(customAmenities.filter((_, i) => i !== index));
+                                  }}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Add custom amenity */}
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Input
+                          placeholder="Nom du nouvel équipement"
+                          value={newAmenityName}
+                          onChange={(e) => setNewAmenityName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (newAmenityName.trim()) {
+                                setCustomAmenities([...customAmenities, newAmenityName.trim()]);
+                                setNewAmenityName("");
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            if (newAmenityName.trim()) {
+                              setCustomAmenities([...customAmenities, newAmenityName.trim()]);
+                              setNewAmenityName("");
+                            }
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Ajouter
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
