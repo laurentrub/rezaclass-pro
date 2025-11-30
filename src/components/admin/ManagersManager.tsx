@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Mail, Shield, Pencil } from "lucide-react";
+import { Plus, Trash2, Mail, Shield, Pencil, KeyRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -156,6 +156,34 @@ export const ManagersManager = () => {
       toast({
         variant: "destructive",
         title: "Erreur de mise à jour",
+        description: errorMessage,
+      });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, email, fullName }: { userId: string; email: string; fullName: string }) => {
+      // Call the Edge Function to send password reset email
+      const { data, error } = await supabase.functions.invoke('reset-manager-password', {
+        body: { userId, email, fullName }
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Échec de l'envoi de l'email");
+
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email envoyé",
+        description: "Un email de réinitialisation de mot de passe a été envoyé au gestionnaire",
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.message || "Une erreur s'est produite lors de l'envoi de l'email";
+      toast({
+        variant: "destructive",
+        title: "Erreur d'envoi",
         description: errorMessage,
       });
     },
@@ -335,8 +363,26 @@ export const ManagersManager = () => {
                             setSelectedManager(manager);
                             setIsEditDialogOpen(true);
                           }}
+                          title="Modifier"
                         >
                           <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Envoyer un email de réinitialisation de mot de passe à ${manager.profiles?.email} ?`)) {
+                              resetPasswordMutation.mutate({
+                                userId: manager.user_id,
+                                email: manager.profiles?.email,
+                                fullName: manager.profiles?.full_name
+                              });
+                            }
+                          }}
+                          disabled={resetPasswordMutation.isPending}
+                          title="Réinitialiser le mot de passe"
+                        >
+                          <KeyRound className="w-4 h-4 text-primary" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -346,6 +392,7 @@ export const ManagersManager = () => {
                               deleteMutation.mutate(manager.user_id);
                             }
                           }}
+                          title="Supprimer"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
