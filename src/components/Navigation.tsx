@@ -1,4 +1,4 @@
-import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check } from "lucide-react";
+import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
@@ -16,7 +16,7 @@ import { ContactDialog } from "@/components/ContactDialog";
 import { useState } from "react";
 
 export const Navigation = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { hasAdminRole } = useAnyAdminRole();
   const navigate = useNavigate();
   const { language, currency, setLanguage, setCurrency } = useLocaleSettings();
@@ -49,14 +49,24 @@ export const Navigation = () => {
               
               <div className="flex flex-col gap-4 mt-6">
                 {user ? (
-                  <Button
-                    variant="ghost"
-                    className="justify-start gap-3 h-auto py-3"
-                    onClick={() => navigate("/account")}
-                  >
-                    <User size={20} />
-                    <span>Mon Compte</span>
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="justify-start gap-3 h-auto py-3"
+                      onClick={() => navigate("/account")}
+                    >
+                      <User size={20} />
+                      <span>Mon Compte</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start gap-3 h-auto py-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={signOut}
+                    >
+                      <LogOut size={20} />
+                      <span>Se déconnecter</span>
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="ghost"
