@@ -4,8 +4,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useNavigate } from "react-router-dom";
 
 const InspirationSection = () => {
+  const navigate = useNavigate();
+
+  const handleLinkClick = (e: React.MouseEvent, destination: string) => {
+    e.preventDefault();
+    navigate(`/search?destination=${encodeURIComponent(destination)}`);
+  };
   const inspirationCategories = [
     {
       id: "destinations-phares",
@@ -88,7 +95,8 @@ const InspirationSection = () => {
                     <a
                       key={index}
                       href="#"
-                      className="text-muted-foreground hover:text-primary transition-colors underline"
+                      onClick={(e) => handleLinkClick(e, link)}
+                      className="text-muted-foreground hover:text-primary transition-colors underline cursor-pointer"
                     >
                       {link}
                     </a>
