@@ -5,6 +5,7 @@ import { WeekendGetaways } from "@/components/home/WeekendGetaways";
 import { CategoryFilters } from "@/components/home/CategoryFilters";
 import { PopularDestinations } from "@/components/home/PopularDestinations";
 import ServicesSection from "@/components/home/ServicesSection";
+import NewsletterSection from "@/components/home/NewsletterSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,6 +86,9 @@ const Index = () => {
           </div>
         )}
       </section>
+
+      {/* Newsletter Section */}
+      <NewsletterSection />
 
       {/* Footer */}
       <footer className="bg-card border-t border-border py-12">
