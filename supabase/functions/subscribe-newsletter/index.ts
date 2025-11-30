@@ -1,4 +1,7 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from 'https://esm.sh/resend@4.0.0';
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +68,68 @@ Deno.serve(async (req) => {
     }
 
     console.log('Successfully subscribed email:', email);
+
+    // Send confirmation email
+    try {
+      const emailResponse = await resend.emails.send({
+        from: 'VacancesFrance <onboarding@resend.dev>',
+        to: [email],
+        subject: 'Bienvenue à VacancesFrance - Confirmation d\'inscription',
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #0066CC 0%, #004C99 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #ffffff; padding: 40px 30px; border: 1px solid #e0e0e0; border-top: none; }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; padding: 12px 30px; background: #0066CC; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+                h1 { margin: 0; font-size: 28px; }
+                p { margin: 16px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🏖️ Bienvenue à VacancesFrance !</h1>
+                </div>
+                <div class="content">
+                  <p>Bonjour,</p>
+                  <p>Merci de vous être inscrit à notre newsletter ! Nous sommes ravis de vous compter parmi nous.</p>
+                  <p>Vous recevrez désormais en exclusivité :</p>
+                  <ul>
+                    <li>✨ Nos meilleures offres de locations saisonnières</li>
+                    <li>🏡 Les nouveaux biens disponibles en avant-première</li>
+                    <li>💡 Nos conseils et astuces pour des vacances réussies</li>
+                    <li>🎁 Des promotions exclusives réservées à nos abonnés</li>
+                  </ul>
+                  <p style="text-align: center;">
+                    <a href="${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '') || 'https://votre-site.com'}" class="button">
+                      Découvrir nos locations
+                    </a>
+                  </p>
+                  <p>À très bientôt pour de belles découvertes !</p>
+                  <p style="margin-top: 30px;">
+                    L'équipe VacancesFrance
+                  </p>
+                </div>
+                <div class="footer">
+                  <p>Vous recevez cet email car vous vous êtes inscrit à notre newsletter.</p>
+                  <p>VacancesFrance - Votre partenaire de confiance pour des vacances exceptionnelles en France</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+      });
+
+      console.log('Confirmation email sent successfully:', emailResponse);
+    } catch (emailError) {
+      // Log the error but don't fail the subscription
+      console.error('Error sending confirmation email:', emailError);
+    }
 
     return new Response(
       JSON.stringify({ 
