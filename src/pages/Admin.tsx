@@ -10,6 +10,8 @@ import { BookingsManager } from "@/components/admin/BookingsManager";
 import { PropertyOwnersManager } from "@/components/admin/PropertyOwnersManager";
 import { BlockedPeriodsManager } from "@/components/admin/BlockedPeriodsManager";
 import { Dashboard } from "@/components/admin/Dashboard";
+import { ManagersManager } from "@/components/admin/ManagersManager";
+import { PropertyAssignment } from "@/components/admin/PropertyAssignment";
 import { Shield } from "lucide-react";
 
 const Admin = () => {
@@ -59,12 +61,18 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="dashboard">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="properties">Propriétés</TabsTrigger>
             <TabsTrigger value="bookings">Réservations</TabsTrigger>
             <TabsTrigger value="blocked">Périodes bloquées</TabsTrigger>
             <TabsTrigger value="owners">Propriétaires</TabsTrigger>
+            {role === "admin" && (
+              <>
+                <TabsTrigger value="managers">Gestionnaires</TabsTrigger>
+                <TabsTrigger value="assignment">Attribution</TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -86,6 +94,18 @@ const Admin = () => {
           <TabsContent value="owners">
             <PropertyOwnersManager />
           </TabsContent>
+
+          {role === "admin" && (
+            <>
+              <TabsContent value="managers">
+                <ManagersManager />
+              </TabsContent>
+
+              <TabsContent value="assignment">
+                <PropertyAssignment />
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </section>
     </div>
