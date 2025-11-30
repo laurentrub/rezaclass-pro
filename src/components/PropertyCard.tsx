@@ -30,6 +30,7 @@ export const PropertyCard = ({ id, image, title, location, price, guests, rating
         <img 
           src={image} 
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
