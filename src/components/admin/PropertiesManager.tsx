@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Search, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Filter, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { geocodeAddress } from "@/lib/geocoding";
 import {
   Dialog,
   DialogContent,
@@ -28,10 +29,70 @@ export const PropertiesManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressPostalCode, setAddressPostalCode] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [computedLatitude, setComputedLatitude] = useState<number | null>(null);
+  const [computedLongitude, setComputedLongitude] = useState<number | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { isManager } = useAnyAdminRole();
+
+  // Reset address fields when dialog opens/closes
+  useEffect(() => {
+    if (isDialogOpen) {
+      if (editingProperty) {
+        // Parse existing address
+        const address = editingProperty.address || "";
+        const parts = address.split(", ");
+        setAddressStreet(parts[0] || "");
+        setAddressPostalCode(parts[1] || "");
+        setAddressCity(parts[2] || "");
+        setComputedLatitude(editingProperty.latitude);
+        setComputedLongitude(editingProperty.longitude);
+      } else {
+        setAddressStreet("");
+        setAddressPostalCode("");
+        setAddressCity("");
+        setComputedLatitude(null);
+        setComputedLongitude(null);
+      }
+    }
+  }, [isDialogOpen, editingProperty]);
+
+  // Auto-geocode when address fields change
+  useEffect(() => {
+    const geocodeTimeout = setTimeout(async () => {
+      if (addressStreet && addressPostalCode && addressCity) {
+        setIsGeocoding(true);
+        const result = await geocodeAddress({
+          street: addressStreet,
+          postalCode: addressPostalCode,
+          city: addressCity,
+        });
+        
+        if (result) {
+          setComputedLatitude(result.latitude);
+          setComputedLongitude(result.longitude);
+          toast({
+            title: "Coordonnées calculées",
+            description: `Position géographique trouvée automatiquement`,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Géocodage échoué",
+            description: "Impossible de trouver les coordonnées pour cette adresse",
+          });
+        }
+        setIsGeocoding(false);
+      }
+    }, 1000); // Debounce de 1 seconde
+
+    return () => clearTimeout(geocodeTimeout);
+  }, [addressStreet, addressPostalCode, addressCity, toast]);
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ["admin-properties", user?.id, isManager],
@@ -211,17 +272,20 @@ export const PropertiesManager = () => {
         ? uploadedGalleryImages 
         : editingProperty?.images || [];
       
+      // Build full address from components
+      const fullAddress = `${addressStreet}, ${addressPostalCode}, ${addressCity}`;
+
       const property: any = {
         title: formData.get("title") as string,
         description: formData.get("description") as string,
         location: formData.get("location") as string,
-        address: formData.get("address") as string,
+        address: fullAddress,
         price_per_night: parseFloat(formData.get("price_per_night") as string),
         max_guests: parseInt(formData.get("max_guests") as string),
         bedrooms: parseInt(formData.get("bedrooms") as string),
         bathrooms: parseInt(formData.get("bathrooms") as string),
-        latitude: formData.get("latitude") ? parseFloat(formData.get("latitude") as string) : null,
-        longitude: formData.get("longitude") ? parseFloat(formData.get("longitude") as string) : null,
+        latitude: computedLatitude,
+        longitude: computedLongitude,
         rating: formData.get("rating") ? parseFloat(formData.get("rating") as string) : 4.5,
         image_url: mainImageUrl,
         images: finalGalleryImages.length > 0 ? finalGalleryImages : null,
@@ -323,12 +387,39 @@ export const PropertiesManager = () => {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="address">Adresse</Label>
+                  <div className="col-span-2">
+                    <Label htmlFor="address_street">Adresse : N° et nom de la rue *</Label>
                     <Input
-                      id="address"
-                      name="address"
-                      defaultValue={editingProperty?.address}
+                      id="address_street"
+                      name="address_street"
+                      value={addressStreet}
+                      onChange={(e) => setAddressStreet(e.target.value)}
+                      placeholder="ex: 12 Rue de la Paix"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address_postal_code">Code Postal *</Label>
+                    <Input
+                      id="address_postal_code"
+                      name="address_postal_code"
+                      value={addressPostalCode}
+                      onChange={(e) => setAddressPostalCode(e.target.value)}
+                      placeholder="ex: 75001"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address_city">Ville *</Label>
+                    <Input
+                      id="address_city"
+                      name="address_city"
+                      value={addressCity}
+                      onChange={(e) => setAddressCity(e.target.value)}
+                      placeholder="ex: Paris"
+                      required
                     />
                   </div>
 
@@ -427,26 +518,45 @@ export const PropertiesManager = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="latitude">Latitude</Label>
+                    <Label htmlFor="latitude" className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Latitude (auto)
+                    </Label>
                     <Input
                       id="latitude"
                       name="latitude"
                       type="number"
                       step="0.000001"
-                      defaultValue={editingProperty?.latitude}
+                      value={computedLatitude || ""}
+                      readOnly
+                      disabled
+                      className="bg-muted"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="longitude">Longitude</Label>
+                    <Label htmlFor="longitude" className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Longitude (auto)
+                    </Label>
                     <Input
                       id="longitude"
                       name="longitude"
                       type="number"
                       step="0.000001"
-                      defaultValue={editingProperty?.longitude}
+                      value={computedLongitude || ""}
+                      readOnly
+                      disabled
+                      className="bg-muted"
                     />
                   </div>
+                  
+                  {isGeocoding && (
+                    <div className="col-span-2 text-sm text-muted-foreground flex items-center gap-2">
+                      <MapPin className="w-4 h-4 animate-pulse" />
+                      Calcul des coordonnées en cours...
+                    </div>
+                  )}
 
                   <div>
                     <Label htmlFor="rating">Note</Label>
