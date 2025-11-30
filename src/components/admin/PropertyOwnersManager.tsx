@@ -98,15 +98,17 @@ export const PropertyOwnersManager = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const bankDetails = formData.get("bank_details") as string;
-    let parsedBankDetails = null;
+    const accountHolder = formData.get("account_holder") as string;
+    const iban = formData.get("iban") as string;
+    const bic = formData.get("bic") as string;
     
-    if (bankDetails) {
-      try {
-        parsedBankDetails = JSON.parse(bankDetails);
-      } catch {
-        parsedBankDetails = { details: bankDetails };
-      }
+    let bankDetails = null;
+    if (accountHolder || iban || bic) {
+      bankDetails = {
+        account_holder: accountHolder || "",
+        iban: iban || "",
+        bic: bic || "",
+      };
     }
 
     saveMutation.mutate({
@@ -114,7 +116,7 @@ export const PropertyOwnersManager = () => {
       email: formData.get("email") as string,
       phone: formData.get("phone") as string || null,
       commission_rate: parseFloat(formData.get("commission_rate") as string),
-      bank_details: parsedBankDetails,
+      bank_details: bankDetails,
     });
   };
 
@@ -184,15 +186,41 @@ export const PropertyOwnersManager = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="bank_details">Coordonnées bancaires (JSON)</Label>
-                <Textarea
-                  id="bank_details"
-                  name="bank_details"
-                  placeholder='{"iban": "FR...", "bic": "..."}'
-                  defaultValue={editingOwner?.bank_details ? JSON.stringify(editingOwner.bank_details, null, 2) : ""}
-                  className="font-mono text-sm"
-                />
+              
+              <div className="space-y-3 border-t pt-4">
+                <h3 className="font-semibold text-sm">Coordonnées bancaires (RIB)</h3>
+                
+                <div>
+                  <Label htmlFor="account_holder">Titulaire du compte</Label>
+                  <Input
+                    id="account_holder"
+                    name="account_holder"
+                    placeholder="Nom du titulaire"
+                    defaultValue={editingOwner?.bank_details?.account_holder || ""}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="iban">IBAN</Label>
+                  <Input
+                    id="iban"
+                    name="iban"
+                    placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+                    defaultValue={editingOwner?.bank_details?.iban || ""}
+                    className="font-mono"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="bic">BIC / SWIFT</Label>
+                  <Input
+                    id="bic"
+                    name="bic"
+                    placeholder="BNPAFRPPXXX"
+                    defaultValue={editingOwner?.bank_details?.bic || ""}
+                    className="font-mono"
+                  />
+                </div>
               </div>
               <Button type="submit" className="w-full">
                 {editingOwner ? "Enregistrer" : "Ajouter"}
@@ -247,6 +275,29 @@ export const PropertyOwnersManager = () => {
                   <span className="font-medium">Commission:</span>
                   <span className="text-primary font-semibold">{owner.commission_rate}%</span>
                 </div>
+                {owner.bank_details && (
+                  <div className="mt-3 pt-3 border-t space-y-1">
+                    <p className="font-medium text-xs text-muted-foreground uppercase">RIB</p>
+                    {owner.bank_details.account_holder && (
+                      <div className="text-xs">
+                        <span className="font-medium">Titulaire: </span>
+                        <span>{owner.bank_details.account_holder}</span>
+                      </div>
+                    )}
+                    {owner.bank_details.iban && (
+                      <div className="text-xs font-mono">
+                        <span className="font-medium">IBAN: </span>
+                        <span>{owner.bank_details.iban}</span>
+                      </div>
+                    )}
+                    {owner.bank_details.bic && (
+                      <div className="text-xs font-mono">
+                        <span className="font-medium">BIC: </span>
+                        <span>{owner.bank_details.bic}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
