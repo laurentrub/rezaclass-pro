@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Mail, Phone, AlertCircle, CheckCircle } from "lucide-react";
-import { validateEuropeanIban, formatIban, getCountryName } from "@/lib/iban-validation";
+import { validateEuropeanIban, formatIban, getCountryName, validateBic, cleanBic } from "@/lib/iban-validation";
 import { cn } from "@/lib/utils";
 
 interface PropertyOwner {
@@ -28,6 +28,8 @@ export const PropertyOwnersManager = () => {
   const [ibanError, setIbanError] = useState<string | null>(null);
   const [ibanValid, setIbanValid] = useState<boolean>(false);
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  const [bicError, setBicError] = useState<string | null>(null);
+  const [bicValid, setBicValid] = useState<boolean>(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -124,6 +126,25 @@ export const PropertyOwnersManager = () => {
     }
   };
 
+  const handleBicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value.trim()) {
+      setBicError(null);
+      setBicValid(false);
+      return;
+    }
+    
+    const validation = validateBic(value);
+    setBicError(validation.error || null);
+    setBicValid(validation.isValid && !!value.trim());
+  };
+
+  const handleBicBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      e.target.value = cleanBic(e.target.value);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -137,6 +158,20 @@ export const PropertyOwnersManager = () => {
       const validation = validateEuropeanIban(iban);
       if (!validation.isValid) {
         setIbanError(validation.error || "IBAN invalide");
+        toast({
+          title: "Erreur de validation",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Valider le BIC avant soumission
+    if (bic && bic.trim()) {
+      const validation = validateBic(bic);
+      if (!validation.isValid) {
+        setBicError(validation.error || "BIC invalide");
         toast({
           title: "Erreur de validation",
           description: validation.error,
@@ -184,6 +219,8 @@ export const PropertyOwnersManager = () => {
               setIbanError(null);
               setIbanValid(false);
               setDetectedCountry(null);
+              setBicError(null);
+              setBicValid(false);
             }}>
               <Plus className="w-4 h-4 mr-2" />
               Ajouter un propriétaire
@@ -284,13 +321,35 @@ export const PropertyOwnersManager = () => {
                 
                 <div>
                   <Label htmlFor="bic">BIC / SWIFT</Label>
-                  <Input
-                    id="bic"
-                    name="bic"
-                    placeholder="BNPAFRPPXXX"
-                    defaultValue={editingOwner?.bank_details?.bic || ""}
-                    className="font-mono"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="bic"
+                      name="bic"
+                      placeholder="BNPAFRPPXXX"
+                      defaultValue={editingOwner?.bank_details?.bic || ""}
+                      className={cn(
+                        "font-mono pr-10",
+                        bicError && "border-destructive focus-visible:ring-destructive",
+                        bicValid && "border-green-500 focus-visible:ring-green-500"
+                      )}
+                      onChange={handleBicChange}
+                      onBlur={handleBicBlur}
+                    />
+                    {bicValid && (
+                      <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                    )}
+                    {bicError && (
+                      <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
+                    )}
+                  </div>
+                  {bicError && (
+                    <p className="text-xs text-destructive mt-1">{bicError}</p>
+                  )}
+                  {bicValid && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ BIC valide
+                    </p>
+                  )}
                 </div>
               </div>
               <Button type="submit" className="w-full">
@@ -315,6 +374,8 @@ export const PropertyOwnersManager = () => {
                     setIbanError(null);
                     setIbanValid(false);
                     setDetectedCountry(null);
+                    setBicError(null);
+                    setBicValid(false);
                     setIsDialogOpen(true);
                   }}
                 >

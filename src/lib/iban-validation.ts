@@ -139,3 +139,56 @@ export const validateEuropeanIban = (iban: string): {
 export const getCountryName = (countryCode: string): string => {
   return COUNTRY_NAMES[countryCode] || countryCode;
 };
+
+/**
+ * Nettoie le BIC en supprimant les espaces et en convertissant en majuscules
+ */
+export const cleanBic = (bic: string): string => {
+  return bic.replace(/[\s-]/g, '').toUpperCase();
+};
+
+/**
+ * Valide un code BIC/SWIFT
+ */
+export const validateBic = (bic: string): {
+  isValid: boolean;
+  error?: string;
+} => {
+  if (!bic || bic.trim() === '') {
+    return { isValid: true }; // Champ optionnel
+  }
+  
+  const clean = cleanBic(bic);
+  
+  // Vérifier la longueur (8 ou 11 caractères)
+  if (clean.length !== 8 && clean.length !== 11) {
+    return {
+      isValid: false,
+      error: `Le BIC doit contenir 8 ou 11 caractères (actuellement ${clean.length})`,
+    };
+  }
+  
+  // Vérifier le format: 4 lettres + 2 lettres + 2 alphanum + (3 alphanum optionnels)
+  // Format: AAAABBCCXXX où A=banque, B=pays, C=location, X=branche (optionnel)
+  const bicRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+  
+  if (!bicRegex.test(clean)) {
+    return {
+      isValid: false,
+      error: "Format BIC invalide. Structure attendue : 4 lettres (banque) + 2 lettres (pays) + 2 caractères (location) + 3 caractères optionnels (branche)",
+    };
+  }
+  
+  // Vérifier que le code pays correspond à un code ISO valide
+  const countryCode = clean.slice(4, 6);
+  const validCountryCodes = Object.keys(IBAN_LENGTHS);
+  
+  if (!validCountryCodes.includes(countryCode)) {
+    return {
+      isValid: false,
+      error: `Le code pays "${countryCode}" dans le BIC n'est pas reconnu`,
+    };
+  }
+  
+  return { isValid: true };
+};
