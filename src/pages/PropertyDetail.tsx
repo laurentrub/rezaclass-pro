@@ -262,21 +262,29 @@ const PropertyDetail = () => {
 
             <Separator />
 
-            {/* Map */}
-            {property.latitude && property.longitude && (
-              <>
-                <div id="location">
-                  <h2 className="text-2xl font-bold mb-4">Localisation</h2>
-                  <PropertyMap
-                    latitude={Number(property.latitude)}
-                    longitude={Number(property.longitude)}
-                    title={property.title}
-                    address={property.address || property.location}
-                  />
+            {/* Map/Location Section - Always display with ID for tab navigation */}
+            <div id="location">
+              <h2 className="text-2xl font-bold mb-4">Localisation</h2>
+              {property.latitude && property.longitude ? (
+                <PropertyMap
+                  latitude={Number(property.latitude)}
+                  longitude={Number(property.longitude)}
+                  title={property.title}
+                  address={property.address || property.location}
+                />
+              ) : (
+                <div className="p-8 bg-muted rounded-lg text-center">
+                  <p className="text-muted-foreground">
+                    <strong>{property.location}</strong>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Les coordonnées GPS détaillées ne sont pas disponibles pour cette propriété.
+                  </p>
                 </div>
-                <Separator />
-              </>
-            )}
+              )}
+            </div>
+
+            <Separator />
 
             {/* Reviews */}
             <div id="reviews">
