@@ -5,6 +5,8 @@ import { WeekendGetaways } from "@/components/home/WeekendGetaways";
 import { CategoryFilters } from "@/components/home/CategoryFilters";
 import { PopularDestinations } from "@/components/home/PopularDestinations";
 import ServicesSection from "@/components/home/ServicesSection";
+import AboutSection from "@/components/home/AboutSection";
+import InspirationSection from "@/components/home/InspirationSection";
 import NewsletterSection from "@/components/home/NewsletterSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,6 +88,12 @@ const Index = () => {
           </div>
         )}
       </section>
+
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Inspiration Section */}
+      <InspirationSection />
 
       {/* Newsletter Section */}
       <NewsletterSection />
