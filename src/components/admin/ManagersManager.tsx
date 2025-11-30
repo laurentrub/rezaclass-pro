@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Mail, Shield } from "lucide-react";
+import { Plus, Trash2, Mail, Shield, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -29,6 +29,8 @@ import {
 
 export const ManagersManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedManager, setSelectedManager] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -128,6 +130,37 @@ export const ManagersManager = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ userId, email, password, fullName }: { userId: string; email?: string; password?: string; fullName?: string }) => {
+      // Call the Edge Function to update the manager
+      const { data, error } = await supabase.functions.invoke('update-manager', {
+        body: { userId, email, password, fullName }
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Échec de la mise à jour du gestionnaire");
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-managers"] });
+      setIsEditDialogOpen(false);
+      setSelectedManager(null);
+      toast({
+        title: "Gestionnaire mis à jour",
+        description: "Les informations du gestionnaire ont été mises à jour avec succès",
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.message || "Une erreur s'est produite lors de la mise à jour du gestionnaire";
+      toast({
+        variant: "destructive",
+        title: "Erreur de mise à jour",
+        description: errorMessage,
+      });
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -137,6 +170,29 @@ export const ManagersManager = () => {
     const fullName = formData.get("full_name") as string;
 
     createMutation.mutate({ email, password, fullName });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const email = formData.get("edit_email") as string;
+    const password = formData.get("edit_password") as string;
+    const fullName = formData.get("edit_full_name") as string;
+
+    // Only include fields that have values
+    const updateData: any = { userId: selectedManager.user_id };
+    if (fullName && fullName !== selectedManager.profiles?.full_name) {
+      updateData.fullName = fullName;
+    }
+    if (email && email !== selectedManager.profiles?.email) {
+      updateData.email = email;
+    }
+    if (password) {
+      updateData.password = password;
+    }
+
+    updateMutation.mutate(updateData);
   };
 
   if (isLoading) {
@@ -271,17 +327,29 @@ export const ManagersManager = () => {
                       {new Date(manager.created_at).toLocaleDateString("fr-FR")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Êtes-vous sûr de vouloir retirer le rôle de gestionnaire à cet utilisateur ?")) {
-                            deleteMutation.mutate(manager.user_id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedManager(manager);
+                            setIsEditDialogOpen(true);
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Êtes-vous sûr de vouloir retirer le rôle de gestionnaire à cet utilisateur ?")) {
+                              deleteMutation.mutate(manager.user_id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -290,6 +358,74 @@ export const ManagersManager = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Manager Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le gestionnaire</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations du gestionnaire. Laissez le mot de passe vide pour ne pas le changer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit_full_name">Nom complet *</Label>
+              <Input
+                id="edit_full_name"
+                name="edit_full_name"
+                type="text"
+                required
+                defaultValue={selectedManager?.profiles?.full_name || ""}
+                placeholder="Jean Dupont"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit_email">Email *</Label>
+              <Input
+                id="edit_email"
+                name="edit_email"
+                type="email"
+                required
+                defaultValue={selectedManager?.profiles?.email || ""}
+                placeholder="jean.dupont@example.com"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit_password">Nouveau mot de passe</Label>
+              <Input
+                id="edit_password"
+                name="edit_password"
+                type="password"
+                minLength={6}
+                placeholder="Laissez vide pour ne pas changer"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Minimum 6 caractères si vous souhaitez changer le mot de passe
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setSelectedManager(null);
+                }}
+              >
+                Annuler
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Mise à jour..." : "Mettre à jour"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
