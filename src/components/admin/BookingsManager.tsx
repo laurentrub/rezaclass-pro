@@ -8,7 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Filter, DollarSign, User, Mail, Calendar, MapPin, Users, Euro, FileText, Download, ExternalLink } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Filter, DollarSign, User, Mail, Calendar, MapPin, Users, Euro, FileText, Download, ExternalLink, History } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -42,6 +43,17 @@ export const BookingsManager = () => {
       return data;
     },
   });
+
+  const fetchPaymentHistory = async (bookingId: string) => {
+    const { data, error } = await supabase
+      .from("payment_status_history")
+      .select("*")
+      .eq("booking_id", bookingId)
+      .order("changed_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  };
 
   // Filter bookings
   const filteredBookings = bookings?.filter((booking: any) => {
@@ -81,13 +93,34 @@ export const BookingsManager = () => {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: async ({ id, payment_status, admin_commission, owner_payout_amount, admin_notes }: any) => {
+    mutationFn: async ({ id, payment_status, admin_commission, owner_payout_amount, admin_notes, booking }: any) => {
       const { error } = await supabase
         .from("bookings")
         .update({ payment_status, admin_commission, owner_payout_amount, admin_notes })
         .eq("id", id);
 
       if (error) throw error;
+
+      // Send confirmation email if payment is confirmed
+      if (payment_status === "received" && booking) {
+        try {
+          await supabase.functions.invoke("send-payment-confirmation", {
+            body: {
+              bookingId: booking.id,
+              customerEmail: booking.profiles?.email,
+              customerName: booking.profiles?.full_name || "Client",
+              propertyTitle: booking.properties?.title || "",
+              checkInDate: booking.check_in_date,
+              checkOutDate: booking.check_out_date,
+              totalPrice: booking.total_price,
+            },
+          });
+          console.log("Payment confirmation email sent");
+        } catch (emailError) {
+          console.error("Error sending confirmation email:", emailError);
+          // Don't throw - payment update was successful
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
@@ -309,7 +342,8 @@ export const BookingsManager = () => {
                               payment_status: value,
                               admin_commission: payoutDetails.commission,
                               owner_payout_amount: payoutDetails.ownerPayout,
-                              admin_notes: booking.admin_notes
+                              admin_notes: booking.admin_notes,
+                              booking: booking
                             })
                           }
                         >
@@ -342,6 +376,19 @@ export const BookingsManager = () => {
                   </div>
                 )}
 
+                {/* Payment History Section */}
+                <Collapsible className="space-y-2">
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <History className="w-4 h-4 mr-2" />
+                      Historique des statuts de paiement
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <PaymentHistorySection bookingId={booking.id} fetchPaymentHistory={fetchPaymentHistory} />
+                  </CollapsibleContent>
+                </Collapsible>
+
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Statut:</span>
                   <Select
@@ -371,6 +418,86 @@ export const BookingsManager = () => {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+};
+
+// Payment History Component
+const PaymentHistorySection = ({ 
+  bookingId, 
+  fetchPaymentHistory 
+}: { 
+  bookingId: string; 
+  fetchPaymentHistory: (id: string) => Promise<any[]>; 
+}) => {
+  const { data: history, isLoading } = useQuery({
+    queryKey: ["payment-history", bookingId],
+    queryFn: () => fetchPaymentHistory(bookingId),
+  });
+
+  if (isLoading) {
+    return <div className="text-sm text-muted-foreground p-4">Chargement...</div>;
+  }
+
+  if (!history || history.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg">
+        Aucun historique disponible
+      </div>
+    );
+  }
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      pending: "En attente",
+      proof_submitted: "Justificatif soumis",
+      received: "Reçu",
+      transferred_to_owner: "Transféré",
+      processing: "En traitement",
+      completed: "Terminé",
+      failed: "Échoué",
+    };
+    return labels[status] || status;
+  };
+
+  return (
+    <div className="space-y-2 p-4 bg-muted/30 rounded-lg">
+      {history.map((entry, index) => (
+        <div 
+          key={entry.id} 
+          className={`flex items-start gap-3 pb-2 ${index !== history.length - 1 ? 'border-b border-border/50' : ''}`}
+        >
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              {entry.old_status && (
+                <>
+                  <Badge variant="outline" className="text-xs">
+                    {getStatusLabel(entry.old_status)}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">→</span>
+                </>
+              )}
+              <Badge variant="default" className="text-xs">
+                {getStatusLabel(entry.new_status)}
+              </Badge>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {new Date(entry.changed_at).toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </div>
+            {entry.notes && (
+              <div className="text-xs text-muted-foreground italic">
+                {entry.notes}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
