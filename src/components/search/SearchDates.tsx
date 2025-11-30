@@ -17,7 +17,7 @@ const DURATIONS = [
   { value: "weekend", label: "Week-end" },
   { value: "1week", label: "1 semaine" },
   { value: "1month", label: "1 mois" },
-  { value: "flexible", label: "Dates indifférentes" },
+  { value: "flexible", label: "1 semaine, Dates indifférentes" },
 ];
 
 const MONTHS = [
