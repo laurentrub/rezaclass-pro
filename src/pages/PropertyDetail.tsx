@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation } from "@/components/Navigation";
+import { PropertyNavigation } from "@/components/property/PropertyNavigation";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { PropertyMap } from "@/components/property/PropertyMap";
 import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
@@ -113,7 +113,7 @@ const PropertyDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
+        <PropertyNavigation />
         <div className="container mx-auto px-4 py-8">
           <Skeleton className="h-[500px] w-full rounded-xl mb-8" />
           <div className="grid lg:grid-cols-3 gap-8">
@@ -131,7 +131,7 @@ const PropertyDetail = () => {
   if (!property) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
+        <PropertyNavigation />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Propriété non trouvée</h1>
           <Button onClick={() => navigate("/")}>Retour à l'accueil</Button>
@@ -153,7 +153,7 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
-      <Navigation />
+      <PropertyNavigation />
 
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
