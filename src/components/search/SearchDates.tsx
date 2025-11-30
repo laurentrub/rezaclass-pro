@@ -48,7 +48,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
       const monthsPart = value.months?.length ? value.months.join(", ") : "1 semaine";
       return duration ? `${duration.label}, ${monthsPart}` : "Dates flexibles";
     }
-    return "Dates";
+    return "1 semaine, Dates indifférentes";
   };
 
   const handleDurationChange = (duration: string) => {
