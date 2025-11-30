@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Mail, Phone } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { Plus, Edit, Trash2, Mail, Phone, AlertCircle, CheckCircle } from "lucide-react";
+import { validateEuropeanIban, formatIban, getCountryName } from "@/lib/iban-validation";
+import { cn } from "@/lib/utils";
 
 interface PropertyOwner {
   id: string;
@@ -24,6 +25,9 @@ interface PropertyOwner {
 export const PropertyOwnersManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOwner, setEditingOwner] = useState<PropertyOwner | null>(null);
+  const [ibanError, setIbanError] = useState<string | null>(null);
+  const [ibanValid, setIbanValid] = useState<boolean>(false);
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -94,6 +98,32 @@ export const PropertyOwnersManager = () => {
     },
   });
 
+  const handleIbanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value.trim()) {
+      setIbanError(null);
+      setIbanValid(false);
+      setDetectedCountry(null);
+      return;
+    }
+    
+    const validation = validateEuropeanIban(value);
+    setIbanError(validation.error || null);
+    setIbanValid(validation.isValid && !!value.trim());
+    
+    if (validation.countryCode) {
+      setDetectedCountry(getCountryName(validation.countryCode));
+    } else {
+      setDetectedCountry(null);
+    }
+  };
+
+  const handleIbanBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      e.target.value = formatIban(e.target.value);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -101,6 +131,20 @@ export const PropertyOwnersManager = () => {
     const accountHolder = formData.get("account_holder") as string;
     const iban = formData.get("iban") as string;
     const bic = formData.get("bic") as string;
+    
+    // Valider l'IBAN avant soumission
+    if (iban && iban.trim()) {
+      const validation = validateEuropeanIban(iban);
+      if (!validation.isValid) {
+        setIbanError(validation.error || "IBAN invalide");
+        toast({
+          title: "Erreur de validation",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     
     let bankDetails = null;
     if (accountHolder || iban || bic) {
@@ -135,7 +179,12 @@ export const PropertyOwnersManager = () => {
         <h2 className="text-2xl font-bold">Gestion des Propriétaires</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingOwner(null)}>
+            <Button onClick={() => {
+              setEditingOwner(null);
+              setIbanError(null);
+              setIbanValid(false);
+              setDetectedCountry(null);
+            }}>
               <Plus className="w-4 h-4 mr-2" />
               Ajouter un propriétaire
             </Button>
@@ -202,13 +251,35 @@ export const PropertyOwnersManager = () => {
                 
                 <div>
                   <Label htmlFor="iban">IBAN</Label>
-                  <Input
-                    id="iban"
-                    name="iban"
-                    placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
-                    defaultValue={editingOwner?.bank_details?.iban || ""}
-                    className="font-mono"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="iban"
+                      name="iban"
+                      placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+                      defaultValue={editingOwner?.bank_details?.iban || ""}
+                      className={cn(
+                        "font-mono pr-10",
+                        ibanError && "border-destructive focus-visible:ring-destructive",
+                        ibanValid && "border-green-500 focus-visible:ring-green-500"
+                      )}
+                      onChange={handleIbanChange}
+                      onBlur={handleIbanBlur}
+                    />
+                    {ibanValid && (
+                      <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                    )}
+                    {ibanError && (
+                      <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
+                    )}
+                  </div>
+                  {ibanError && (
+                    <p className="text-xs text-destructive mt-1">{ibanError}</p>
+                  )}
+                  {ibanValid && detectedCountry && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ IBAN {detectedCountry} valide
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -241,6 +312,9 @@ export const PropertyOwnersManager = () => {
                   size="icon"
                   onClick={() => {
                     setEditingOwner(owner);
+                    setIbanError(null);
+                    setIbanValid(false);
+                    setDetectedCountry(null);
                     setIsDialogOpen(true);
                   }}
                 >
