@@ -7,6 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Mail, Phone, AlertCircle, CheckCircle } from "lucide-react";
 import { validateEuropeanIban, formatIban, getCountryName, validateBic, cleanBic } from "@/lib/iban-validation";
@@ -22,6 +32,18 @@ interface PropertyOwner {
   created_at: string;
 }
 
+interface PendingOwnerData {
+  name: string;
+  email: string;
+  phone: string | null;
+  commission_rate: number;
+  bank_details: {
+    account_holder: string;
+    iban: string;
+    bic: string;
+  } | null;
+}
+
 export const PropertyOwnersManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOwner, setEditingOwner] = useState<PropertyOwner | null>(null);
@@ -30,6 +52,8 @@ export const PropertyOwnersManager = () => {
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [bicError, setBicError] = useState<string | null>(null);
   const [bicValid, setBicValid] = useState<boolean>(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingOwnerData, setPendingOwnerData] = useState<PendingOwnerData | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -190,13 +214,25 @@ export const PropertyOwnersManager = () => {
       };
     }
 
-    saveMutation.mutate({
+    // Préparer les données et afficher la confirmation
+    const ownerData: PendingOwnerData = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string || null,
       commission_rate: parseFloat(formData.get("commission_rate") as string),
       bank_details: bankDetails,
-    });
+    };
+
+    setPendingOwnerData(ownerData);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingOwnerData) {
+      saveMutation.mutate(pendingOwnerData);
+      setShowConfirmDialog(false);
+      setPendingOwnerData(null);
+    }
   };
 
   if (isLoading) {
@@ -446,6 +482,84 @@ export const PropertyOwnersManager = () => {
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {editingOwner ? "Confirmer la modification" : "Confirmer l'ajout"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>Veuillez vérifier les informations avant de confirmer :</p>
+                
+                {pendingOwnerData && (
+                  <div className="space-y-3 text-sm">
+                    <div className="grid grid-cols-[120px_1fr] gap-2">
+                      <span className="font-medium text-foreground">Nom :</span>
+                      <span className="text-foreground">{pendingOwnerData.name}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-[120px_1fr] gap-2">
+                      <span className="font-medium text-foreground">Email :</span>
+                      <span className="text-foreground">{pendingOwnerData.email}</span>
+                    </div>
+                    
+                    {pendingOwnerData.phone && (
+                      <div className="grid grid-cols-[120px_1fr] gap-2">
+                        <span className="font-medium text-foreground">Téléphone :</span>
+                        <span className="text-foreground">{pendingOwnerData.phone}</span>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-[120px_1fr] gap-2">
+                      <span className="font-medium text-foreground">Commission :</span>
+                      <span className="text-foreground">{pendingOwnerData.commission_rate}%</span>
+                    </div>
+
+                    {pendingOwnerData.bank_details && (
+                      <>
+                        <div className="border-t pt-3 mt-3">
+                          <p className="font-semibold text-foreground mb-2">Coordonnées bancaires :</p>
+                        </div>
+                        
+                        {pendingOwnerData.bank_details.account_holder && (
+                          <div className="grid grid-cols-[120px_1fr] gap-2">
+                            <span className="font-medium text-foreground">Titulaire :</span>
+                            <span className="text-foreground">{pendingOwnerData.bank_details.account_holder}</span>
+                          </div>
+                        )}
+                        
+                        {pendingOwnerData.bank_details.iban && (
+                          <div className="grid grid-cols-[120px_1fr] gap-2">
+                            <span className="font-medium text-foreground">IBAN :</span>
+                            <span className="text-foreground font-mono text-xs">
+                              {pendingOwnerData.bank_details.iban}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {pendingOwnerData.bank_details.bic && (
+                          <div className="grid grid-cols-[120px_1fr] gap-2">
+                            <span className="font-medium text-foreground">BIC :</span>
+                            <span className="text-foreground font-mono">{pendingOwnerData.bank_details.bic}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSave}>
+              Confirmer l'enregistrement
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
