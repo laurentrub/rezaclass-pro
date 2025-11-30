@@ -1,6 +1,8 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
 import { PropertyCard } from "@/components/PropertyCard";
+import { WeekendGetaways } from "@/components/home/WeekendGetaways";
+import { CategoryFilters } from "@/components/home/CategoryFilters";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +32,12 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <Hero />
+      
+      {/* Weekend Getaways Section */}
+      <WeekendGetaways />
+
+      {/* Category Filters Section */}
+      <CategoryFilters />
       
       {/* Properties Section */}
       <section className="py-20 container mx-auto px-4">
