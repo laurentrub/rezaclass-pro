@@ -4,6 +4,7 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { WeekendGetaways } from "@/components/home/WeekendGetaways";
 import { CategoryFilters } from "@/components/home/CategoryFilters";
 import { PopularDestinations } from "@/components/home/PopularDestinations";
+import ServicesSection from "@/components/home/ServicesSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,6 +43,9 @@ const Index = () => {
 
       {/* Popular Destinations Section */}
       <PopularDestinations />
+
+      {/* Services Section */}
+      <ServicesSection />
       
       {/* Properties Section */}
       <section className="py-20 container mx-auto px-4">
