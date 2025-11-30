@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PropertiesManager } from "@/components/admin/PropertiesManager";
 import { BookingsManager } from "@/components/admin/BookingsManager";
 import { PropertyOwnersManager } from "@/components/admin/PropertyOwnersManager";
+import { BlockedPeriodsManager } from "@/components/admin/BlockedPeriodsManager";
 import { Dashboard } from "@/components/admin/Dashboard";
 import { Shield } from "lucide-react";
 
@@ -60,6 +61,7 @@ const Admin = () => {
             <TabsTrigger value="dashboard">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="properties">Propriétés</TabsTrigger>
             <TabsTrigger value="bookings">Réservations</TabsTrigger>
+            <TabsTrigger value="blocked">Périodes bloquées</TabsTrigger>
             <TabsTrigger value="owners">Propriétaires</TabsTrigger>
           </TabsList>
 
@@ -73,6 +75,10 @@ const Admin = () => {
 
           <TabsContent value="bookings">
             <BookingsManager />
+          </TabsContent>
+
+          <TabsContent value="blocked">
+            <BlockedPeriodsManager />
           </TabsContent>
 
           <TabsContent value="owners">
