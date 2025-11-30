@@ -20,18 +20,38 @@ import beachBrittany from "@/assets/beach-brittany.jpg";
 import heroVilla from "@/assets/hero-villa.jpg";
 
 const Index = () => {
-  const { data: properties, isLoading } = useQuery({
-    queryKey: ["properties"],
+  // Charger seulement les meilleures propriétés (top 8 par note)
+  const { data: topRatedProperties, isLoading: isLoadingTopRated } = useQuery({
+    queryKey: ["properties", "top-rated"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("rating", { ascending: false })
+        .limit(8);
 
       if (error) throw error;
       return data || [];
     },
   });
+
+  // Charger les propriétés récentes (top 8)
+  const { data: recentProperties, isLoading: isLoadingRecent } = useQuery({
+    queryKey: ["properties", "recent"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const isLoading = isLoadingTopRated || isLoadingRecent;
+  const properties = topRatedProperties || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,16 +74,16 @@ const Index = () => {
       <section className="py-20 container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            Nos locations de vacances
+            Nos meilleures locations
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Des hébergements soigneusement sélectionnés dans les plus belles régions de France
+            Découvrez notre sélection des hébergements les mieux notés
           </p>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="space-y-3">
                 <Skeleton className="h-64 w-full rounded-xl" />
                 <Skeleton className="h-6 w-3/4" />
@@ -72,7 +92,7 @@ const Index = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {properties?.map((property) => (
               <PropertyCard 
                 key={property.id}
