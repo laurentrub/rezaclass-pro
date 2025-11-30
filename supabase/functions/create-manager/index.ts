@@ -90,6 +90,22 @@ serve(async (req) => {
 
     console.log('User created successfully:', userData.user.id);
 
+    // Create the profile manually (admin-created users may not trigger the handle_new_user trigger)
+    const { error: profileInsertError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: userData.user.id,
+        email: email,
+        full_name: fullName,
+      });
+
+    if (profileInsertError) {
+      console.error('Error creating profile:', profileInsertError);
+      throw profileInsertError;
+    }
+
+    console.log('Profile created successfully');
+
     // Add the manager role to user_roles table
     const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
