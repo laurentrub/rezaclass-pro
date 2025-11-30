@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, Calendar, DollarSign, Users, AlertCircle } from "lucide-react";
@@ -7,48 +9,90 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 
 export const Dashboard = () => {
+  const { user } = useAuth();
+  const { isManager } = useAnyAdminRole();
+  
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["admin-dashboard-stats"],
+    queryKey: ["admin-dashboard-stats", user?.id, isManager],
     queryFn: async () => {
+      if (!user) return null;
+      
       // Fetch properties count
-      const { count: totalProperties } = await supabase
+      let propertiesQuery = supabase
         .from("properties")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true }) as any;
+      
+      // Managers can only see properties they manage
+      if (isManager) {
+        propertiesQuery.eq("managed_by", user.id);
+      }
+      
+      const { count: totalProperties } = await propertiesQuery;
 
-      const { count: activeProperties } = await supabase
+      let activePropertiesQuery = supabase
         .from("properties")
         .select("*", { count: "exact", head: true })
-        .eq("status", "active");
-
-      // Fetch bookings stats
-      const { data: bookings } = await supabase
-        .from("bookings")
-        .select("total_price, status, payment_status, admin_commission");
-
-      const pendingBookings = bookings?.filter((b) => b.status === "pending").length || 0;
-      const confirmedBookings = bookings?.filter((b) => b.status === "confirmed").length || 0;
+        .eq("status", "active") as any;
+        
+      if (isManager) {
+        activePropertiesQuery.eq("managed_by", user.id);
+      }
       
-      const totalRevenue = bookings?.reduce((sum, b) => sum + (parseFloat(b.total_price as any) || 0), 0) || 0;
-      const totalCommissions = bookings?.reduce((sum, b) => sum + (parseFloat(b.admin_commission as any) || 0), 0) || 0;
+      const { count: activeProperties } = await activePropertiesQuery;
+
+      // Fetch bookings stats - only for properties the user has access to
+      let bookingsQuery = supabase
+        .from("bookings")
+        .select(`
+          total_price, 
+          status, 
+          payment_status, 
+          admin_commission,
+          properties!inner(id, managed_by)
+        `) as any;
+        
+      if (isManager) {
+        bookingsQuery.eq("properties.managed_by", user.id);
+      }
+      
+      const { data: bookings } = await bookingsQuery;
+
+      const pendingBookings = bookings?.filter((b: any) => b.status === "pending").length || 0;
+      const confirmedBookings = bookings?.filter((b: any) => b.status === "confirmed").length || 0;
+      
+      const totalRevenue = bookings?.reduce((sum: number, b: any) => sum + (parseFloat(b.total_price as any) || 0), 0) || 0;
+      const totalCommissions = bookings?.reduce((sum: number, b: any) => sum + (parseFloat(b.admin_commission as any) || 0), 0) || 0;
 
       // Fetch owners count
-      const { count: totalOwners } = await supabase
+      let ownersQuery = supabase
         .from("property_owners")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true }) as any;
+        
+      if (isManager) {
+        ownersQuery.eq("created_by", user.id);
+      }
+      
+      const { count: totalOwners } = await ownersQuery;
 
       // Fetch recent bookings for alerts
-      const { data: recentBookings } = await supabase
+      let recentBookingsQuery = supabase
         .from("bookings")
         .select(`
           id,
           status,
           created_at,
           check_in_date,
-          properties (title)
+          properties!inner(title, managed_by)
         `)
         .eq("status", "pending")
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(5) as any;
+        
+      if (isManager) {
+        recentBookingsQuery.eq("properties.managed_by", user.id);
+      }
+
+      const { data: recentBookings } = await recentBookingsQuery;
 
       return {
         totalProperties: totalProperties || 0,

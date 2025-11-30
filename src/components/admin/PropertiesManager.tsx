@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,11 +30,15 @@ export const PropertiesManager = () => {
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { isManager } = useAnyAdminRole();
 
   const { data: properties, isLoading } = useQuery({
-    queryKey: ["admin-properties"],
+    queryKey: ["admin-properties", user?.id, isManager],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!user) return [];
+      
+      const query = supabase
         .from("properties")
         .select(`
           *,
@@ -42,24 +48,38 @@ export const PropertiesManager = () => {
             email,
             commission_rate
           )
-        `)
-        .order("created_at", { ascending: false });
+        `) as any;
+
+      // Managers can only see properties they manage
+      if (isManager) {
+        query.eq("managed_by", user.id);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
   const { data: owners } = useQuery({
-    queryKey: ["property-owners-list"],
+    queryKey: ["property-owners-list", user?.id, isManager],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!user) return [];
+      
+      const query = supabase
         .from("property_owners")
-        .select("id, name")
-        .order("name");
+        .select("id, name") as any;
+
+      // Managers can only see owners they created
+      if (isManager) {
+        query.eq("created_by", user.id);
+      }
+
+      const { data, error } = await query.order("name");
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -191,7 +211,7 @@ export const PropertiesManager = () => {
         ? uploadedGalleryImages 
         : editingProperty?.images || [];
       
-      const property = {
+      const property: any = {
         title: formData.get("title") as string,
         description: formData.get("description") as string,
         location: formData.get("location") as string,
@@ -213,6 +233,11 @@ export const PropertiesManager = () => {
         available_from: formData.get("available_from") as string || null,
         available_until: formData.get("available_until") as string || null,
       };
+
+      // Set managed_by for new properties
+      if (!editingProperty && user) {
+        property.managed_by = user.id;
+      }
 
       saveMutation.mutate(property);
     } catch (error: any) {

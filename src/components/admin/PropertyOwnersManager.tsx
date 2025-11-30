@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -56,17 +58,27 @@ export const PropertyOwnersManager = () => {
   const [pendingOwnerData, setPendingOwnerData] = useState<PendingOwnerData | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { isManager } = useAnyAdminRole();
 
   const { data: owners, isLoading } = useQuery({
-    queryKey: ["property-owners"],
+    queryKey: ["property-owners", user?.id, isManager],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!user) return [];
+      
+      const query = supabase
         .from("property_owners")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*") as any;
+
+      // Managers can only see owners they created
+      if (isManager) {
+        query.eq("created_by", user.id);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as PropertyOwner[];
+      return (data || []) as PropertyOwner[];
     },
   });
 
@@ -94,16 +106,23 @@ export const PropertyOwnersManager = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (owner: any) => {
+      const ownerData = { ...owner };
+      
+      // Set created_by for new owners
+      if (!editingOwner && user) {
+        ownerData.created_by = user.id;
+      }
+      
       if (editingOwner) {
         const { error } = await supabase
           .from("property_owners")
-          .update(owner)
+          .update(ownerData)
           .eq("id", editingOwner.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("property_owners")
-          .insert([owner]);
+          .insert([ownerData]);
         if (error) throw error;
       }
     },
