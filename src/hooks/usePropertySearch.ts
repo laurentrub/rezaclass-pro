@@ -14,9 +14,18 @@ export const usePropertySearch = (criteria: SearchCriteria | null) => {
       // Filter by location/destination
       if (criteria?.destination) {
         const searchTerm = criteria.destination.name.toLowerCase();
-        query = query.or(
-          `location.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%`
-        );
+        const region = criteria.destination.region?.toLowerCase() || "";
+        
+        // Build a flexible search that matches location, title, address, or region
+        if (region) {
+          query = query.or(
+            `location.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,location.ilike.%${region}%,address.ilike.%${region}%`
+          );
+        } else {
+          query = query.or(
+            `location.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`
+          );
+        }
       }
 
       // Filter by max guests

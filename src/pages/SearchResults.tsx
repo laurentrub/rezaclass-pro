@@ -20,8 +20,23 @@ const SearchResults = () => {
     const adults = parseInt(searchParams.get("adults") || "2");
     const children = parseInt(searchParams.get("children") || "0");
 
+    let parsedDestination = null;
+    if (destination) {
+      try {
+        // Try to parse as JSON first
+        parsedDestination = JSON.parse(destination);
+      } catch {
+        // If it fails, treat it as a simple string destination name
+        parsedDestination = {
+          name: destination,
+          region: "",
+          country: "France"
+        };
+      }
+    }
+
     return {
-      destination: destination ? JSON.parse(destination) : null,
+      destination: parsedDestination,
       dates: {
         mode: "flexible",
         duration: "flexible",
