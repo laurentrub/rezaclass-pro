@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, TouchEvent } from "react";
 import { DayPicker } from "react-day-picker";
 import { addDays, isSameDay, isWithinInterval, addMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import "react-day-picker/dist/style.css";
 
 interface AvailabilityCalendarProps {
@@ -22,6 +23,12 @@ export const AvailabilityCalendar = ({
   const [checkOut, setCheckOut] = useState<Date>();
   const [hoveredDate, setHoveredDate] = useState<Date>();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const isMobile = useIsMobile();
+  
+  // Touch swipe handling
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   const isDateBooked = (date: Date) => {
     return bookedDates.some((bookedDate) => isSameDay(date, bookedDate));
@@ -45,6 +52,32 @@ export const AvailabilityCalendar = ({
     setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
+  const onTouchStart = (e: TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      goToNextMonth();
+    } else if (isRightSwipe) {
+      goToPreviousMonth();
+    }
+    
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -64,6 +97,11 @@ export const AvailabilityCalendar = ({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
+          {isMobile && (
+            <p className="text-xs text-muted-foreground">
+              Glissez pour naviguer
+            </p>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -74,8 +112,16 @@ export const AvailabilityCalendar = ({
           </Button>
         </div>
 
-        {/* Double Month Calendar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Calendar Container with Swipe Support */}
+        <div
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className={cn(
+            "grid gap-8 select-none",
+            isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+          )}
+        >
           <DayPicker
             mode="range"
             selected={
@@ -100,23 +146,23 @@ export const AvailabilityCalendar = ({
             numberOfMonths={1}
             locale={fr}
             showOutsideDays={false}
-            className="pointer-events-auto"
+            className="pointer-events-auto w-full"
             classNames={{
               months: "flex flex-col",
-              month: "space-y-4",
+              month: "space-y-4 w-full",
               caption: "flex justify-center pt-1 relative items-center mb-4",
               caption_label: "text-base font-semibold",
               nav: "hidden",
               table: "w-full border-collapse",
-              head_row: "flex",
-              head_cell: "text-muted-foreground rounded-md w-12 font-normal text-xs",
+              head_row: "flex w-full",
+              head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-xs",
               row: "flex w-full mt-2",
               cell: cn(
                 "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
-                "w-12 h-12"
+                "flex-1 aspect-square"
               ),
               day: cn(
-                "h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                "w-full h-full p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors flex items-center justify-center"
               ),
               day_range_start: "day-range-start rounded-l-md",
               day_range_end: "day-range-end rounded-r-md",
@@ -139,68 +185,70 @@ export const AvailabilityCalendar = ({
             onDayMouseLeave={() => setHoveredDate(undefined)}
           />
 
-          <DayPicker
-            mode="range"
-            selected={
-              checkIn && checkOut
-                ? { from: checkIn, to: checkOut }
-                : checkIn
-                ? { from: checkIn, to: checkIn }
-                : undefined
-            }
-            onSelect={(range) => {
-              if (range?.from) {
-                setCheckIn(range.from);
-                setCheckOut(range.to);
-                onSelectDates?.(range.from, range.to);
+          {!isMobile && (
+            <DayPicker
+              mode="range"
+              selected={
+                checkIn && checkOut
+                  ? { from: checkIn, to: checkOut }
+                  : checkIn
+                  ? { from: checkIn, to: checkIn }
+                  : undefined
               }
-            }}
-            disabled={(date) => {
-              if (date < new Date()) return true;
-              return isDateUnavailable(date);
-            }}
-            month={addMonths(currentMonth, 1)}
-            numberOfMonths={1}
-            locale={fr}
-            showOutsideDays={false}
-            className="pointer-events-auto"
-            classNames={{
-              months: "flex flex-col",
-              month: "space-y-4",
-              caption: "flex justify-center pt-1 relative items-center mb-4",
-              caption_label: "text-base font-semibold",
-              nav: "hidden",
-              table: "w-full border-collapse",
-              head_row: "flex",
-              head_cell: "text-muted-foreground rounded-md w-12 font-normal text-xs",
-              row: "flex w-full mt-2",
-              cell: cn(
-                "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
-                "w-12 h-12"
-              ),
-              day: cn(
-                "h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
-              ),
-              day_range_start: "day-range-start rounded-l-md",
-              day_range_end: "day-range-end rounded-r-md",
-              day_selected:
-                "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-              day_today: "bg-accent text-accent-foreground font-semibold",
-              day_outside: "text-muted-foreground opacity-50",
-              day_disabled: "text-muted-foreground opacity-30 line-through",
-              day_range_middle:
-                "aria-selected:bg-accent aria-selected:text-accent-foreground",
-              day_hidden: "invisible",
-            }}
-            modifiers={{
-              unavailable: allUnavailableDates,
-            }}
-            modifiersClassNames={{
-              unavailable: "line-through text-muted-foreground opacity-30 bg-muted/50",
-            }}
-            onDayMouseEnter={setHoveredDate}
-            onDayMouseLeave={() => setHoveredDate(undefined)}
-          />
+              onSelect={(range) => {
+                if (range?.from) {
+                  setCheckIn(range.from);
+                  setCheckOut(range.to);
+                  onSelectDates?.(range.from, range.to);
+                }
+              }}
+              disabled={(date) => {
+                if (date < new Date()) return true;
+                return isDateUnavailable(date);
+              }}
+              month={addMonths(currentMonth, 1)}
+              numberOfMonths={1}
+              locale={fr}
+              showOutsideDays={false}
+              className="pointer-events-auto w-full"
+              classNames={{
+                months: "flex flex-col",
+                month: "space-y-4 w-full",
+                caption: "flex justify-center pt-1 relative items-center mb-4",
+                caption_label: "text-base font-semibold",
+                nav: "hidden",
+                table: "w-full border-collapse",
+                head_row: "flex w-full",
+                head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-xs",
+                row: "flex w-full mt-2",
+                cell: cn(
+                  "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+                  "flex-1 aspect-square"
+                ),
+                day: cn(
+                  "w-full h-full p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors flex items-center justify-center"
+                ),
+                day_range_start: "day-range-start rounded-l-md",
+                day_range_end: "day-range-end rounded-r-md",
+                day_selected:
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                day_today: "bg-accent text-accent-foreground font-semibold",
+                day_outside: "text-muted-foreground opacity-50",
+                day_disabled: "text-muted-foreground opacity-30 line-through",
+                day_range_middle:
+                  "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                day_hidden: "invisible",
+              }}
+              modifiers={{
+                unavailable: allUnavailableDates,
+              }}
+              modifiersClassNames={{
+                unavailable: "line-through text-muted-foreground opacity-30 bg-muted/50",
+              }}
+              onDayMouseEnter={setHoveredDate}
+              onDayMouseLeave={() => setHoveredDate(undefined)}
+            />
+          )}
         </div>
       </div>
 
