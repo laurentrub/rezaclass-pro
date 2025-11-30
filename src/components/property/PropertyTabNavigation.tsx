@@ -8,6 +8,7 @@ interface PropertyTabNavigationProps {
 const TABS = [
   { id: "overview", label: "Aperçu" },
   { id: "amenities", label: "Équipements" },
+  { id: "availability", label: "Disponibilités" },
   { id: "location", label: "Localisation" },
   { id: "reviews", label: "Avis" },
 ];

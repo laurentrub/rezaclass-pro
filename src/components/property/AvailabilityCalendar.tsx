@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 
 interface AvailabilityCalendarProps {
   bookedDates?: Date[];
+  blockedDates?: Date[];
   onSelectDates?: (checkIn: Date | undefined, checkOut: Date | undefined) => void;
 }
 
 export const AvailabilityCalendar = ({ 
-  bookedDates = [], 
+  bookedDates = [],
+  blockedDates = [],
   onSelectDates 
 }: AvailabilityCalendarProps) => {
   const [checkIn, setCheckIn] = useState<Date>();
@@ -19,6 +21,14 @@ export const AvailabilityCalendar = ({
 
   const isDateBooked = (date: Date) => {
     return bookedDates.some((bookedDate) => isSameDay(date, bookedDate));
+  };
+
+  const isDateBlocked = (date: Date) => {
+    return blockedDates.some((blockedDate) => isSameDay(date, blockedDate));
+  };
+
+  const isDateUnavailable = (date: Date) => {
+    return isDateBooked(date) || isDateBlocked(date);
   };
 
   const isDateInRange = (date: Date) => {
@@ -30,8 +40,8 @@ export const AvailabilityCalendar = ({
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
 
-    // If date is booked, do nothing
-    if (isDateBooked(date)) return;
+    // If date is unavailable (booked or blocked), do nothing
+    if (isDateUnavailable(date)) return;
 
     // If no check-in date or both dates are set, start new selection
     if (!checkIn || (checkIn && checkOut)) {
@@ -54,7 +64,7 @@ export const AvailabilityCalendar = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 text-sm">
+      <div className="flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-primary" />
           <span>Sélectionné</span>
@@ -63,17 +73,22 @@ export const AvailabilityCalendar = ({
           <div className="w-4 h-4 rounded bg-muted" />
           <span>Réservé</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-destructive/20 border-2 border-destructive" />
+          <span>Bloqué</span>
+        </div>
       </div>
 
       <Calendar
         mode="single"
         selected={checkIn}
         onSelect={handleDateSelect}
-        disabled={(date) => date < new Date() || isDateBooked(date)}
+        disabled={(date) => date < new Date() || isDateUnavailable(date)}
         locale={fr}
         className={cn("rounded-md border pointer-events-auto")}
         modifiers={{
           booked: bookedDates,
+          blocked: blockedDates,
           checkIn: checkIn ? [checkIn] : [],
           checkOut: checkOut ? [checkOut] : [],
           inRange: (date) => isDateInRange(date),
@@ -83,6 +98,12 @@ export const AvailabilityCalendar = ({
             backgroundColor: "hsl(var(--muted))",
             color: "hsl(var(--muted-foreground))",
             textDecoration: "line-through",
+          },
+          blocked: {
+            backgroundColor: "hsl(var(--destructive) / 0.2)",
+            color: "hsl(var(--destructive))",
+            border: "2px solid hsl(var(--destructive))",
+            fontWeight: "bold",
           },
           checkIn: {
             backgroundColor: "hsl(var(--primary))",

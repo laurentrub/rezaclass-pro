@@ -13,6 +13,7 @@ import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { SimilarProperties } from "@/components/property/SimilarProperties";
 import { MobileBookingBar } from "@/components/property/MobileBookingBar";
 import { BookingForm } from "@/components/BookingForm";
+import { AvailabilityCalendar } from "@/components/property/AvailabilityCalendar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -74,6 +75,21 @@ const PropertyDetail = () => {
     enabled: !!id,
   });
 
+  // Fetch blocked periods
+  const { data: blockedPeriods } = useQuery({
+    queryKey: ["blocked_periods", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blocked_periods")
+        .select("start_date, end_date")
+        .eq("property_id", id);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
   // Convert bookings to booked dates array
   const bookedDates: Date[] = [];
   bookings?.forEach((booking) => {
@@ -81,6 +97,16 @@ const PropertyDetail = () => {
     const end = new Date(booking.check_out_date);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       bookedDates.push(new Date(d));
+    }
+  });
+
+  // Convert blocked periods to blocked dates array
+  const blockedDates: Date[] = [];
+  blockedPeriods?.forEach((period) => {
+    const start = new Date(period.start_date);
+    const end = new Date(period.end_date);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      blockedDates.push(new Date(d));
     }
   });
 
@@ -222,6 +248,20 @@ const PropertyDetail = () => {
 
             <Separator />
 
+            {/* Availability Calendar */}
+            <div id="availability">
+              <h2 className="text-2xl font-bold mb-4">Calendrier de disponibilité</h2>
+              <p className="text-muted-foreground mb-4">
+                Consultez les dates disponibles pour votre séjour. Les dates réservées et bloquées ne peuvent pas être sélectionnées.
+              </p>
+              <AvailabilityCalendar
+                bookedDates={bookedDates}
+                blockedDates={blockedDates}
+              />
+            </div>
+
+            <Separator />
+
             {/* Map */}
             {property.latitude && property.longitude && (
               <>
@@ -251,7 +291,7 @@ const PropertyDetail = () => {
                 propertyId={property.id}
                 pricePerNight={Number(property.price_per_night)}
                 maxGuests={property.max_guests}
-                bookedDates={bookedDates}
+                bookedDates={[...bookedDates, ...blockedDates]}
                 cleaningFee={Number(property.cleaning_fee) || 0}
                 serviceFee={Number(property.service_fee) || 0}
               />
