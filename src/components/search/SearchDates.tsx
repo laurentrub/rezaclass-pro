@@ -21,8 +21,18 @@ const DURATIONS = [
 ];
 
 const MONTHS = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
 ];
 
 export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
@@ -34,10 +44,8 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
       return `${format(value.checkIn, "d MMM", { locale: fr })} - ${format(value.checkOut, "d MMM", { locale: fr })}`;
     }
     if (mode === "flexible") {
-      const duration = DURATIONS.find(d => d.value === value.duration);
-      const monthsPart = value.months?.length 
-        ? value.months.join(", ")
-        : "Dates indifférentes";
+      const duration = DURATIONS.find((d) => d.value === value.duration);
+      const monthsPart = value.months?.length ? value.months.join(", ") : "1 semaine";
       return duration ? `${duration.label}, ${monthsPart}` : "Dates flexibles";
     }
     return "Dates";
@@ -54,9 +62,9 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
   const handleMonthToggle = (month: string) => {
     const currentMonths = value.months || [];
     const newMonths = currentMonths.includes(month)
-      ? currentMonths.filter(m => m !== month)
+      ? currentMonths.filter((m) => m !== month)
       : [...currentMonths, month];
-    
+
     onChange({
       mode: "flexible",
       duration: value.duration,
@@ -77,9 +85,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
       <PopoverTrigger asChild>
         <div className="flex items-center gap-3 bg-background rounded-lg px-4 py-3 border border-border cursor-pointer hover:border-primary/50 transition-colors">
           <CalendarIcon className="text-muted-foreground" size={20} />
-          <div className="flex-1 text-sm">
-            {getDateSummary()}
-          </div>
+          <div className="flex-1 text-sm">{getDateSummary()}</div>
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start" sideOffset={8}>
@@ -88,7 +94,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
             <TabsTrigger value="flexible">Flexibles</TabsTrigger>
             <TabsTrigger value="specific">Spécifiques</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="flexible" className="p-6 space-y-6 m-0">
             <div>
               <h4 className="text-sm font-semibold mb-3">Durée du séjour</h4>
@@ -101,7 +107,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
                       "px-4 py-3 rounded-lg border-2 transition-all text-sm font-medium",
                       value.duration === duration.value
                         ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "bg-background hover:bg-accent border-border hover:border-primary/30"
+                        : "bg-background hover:bg-accent border-border hover:border-primary/30",
                     )}
                   >
                     {duration.label}
@@ -121,7 +127,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
                       "px-2 py-2 rounded-lg border-2 transition-all text-xs font-medium",
                       value.months?.includes(month)
                         ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "bg-background hover:bg-accent border-border hover:border-primary/30"
+                        : "bg-background hover:bg-accent border-border hover:border-primary/30",
                     )}
                   >
                     {month.slice(0, 3)}
@@ -130,7 +136,7 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="specific" className="p-6 m-0">
             <div className="space-y-4">
               <div>
