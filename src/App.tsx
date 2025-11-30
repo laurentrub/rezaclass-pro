@@ -10,6 +10,7 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import Admin from "./pages/Admin";
+import NewsletterPreferences from "./pages/NewsletterPreferences";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/account" element={<Account />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/newsletter/preferences" element={<NewsletterPreferences />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

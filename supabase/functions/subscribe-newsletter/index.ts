@@ -118,6 +118,11 @@ Deno.serve(async (req) => {
                 <div class="footer">
                   <p>Vous recevez cet email car vous vous êtes inscrit à notre newsletter.</p>
                   <p>VacancesFrance - Votre partenaire de confiance pour des vacances exceptionnelles en France</p>
+                  <p style="margin-top: 10px;">
+                    <a href="${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '') || 'https://votre-site.com'}/newsletter/preferences?email=${encodeURIComponent(email)}" style="color: #0066CC; text-decoration: underline;">
+                      Se désinscrire
+                    </a>
+                  </p>
                 </div>
               </div>
             </body>
