@@ -100,30 +100,15 @@ export const ManagersManager = () => {
 
   const createMutation = useMutation({
     mutationFn: async ({ email, password, fullName }: { email: string; password: string; fullName: string }) => {
-      // First, create the user in auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: fullName,
-        },
+      // Call the Edge Function to create the manager
+      const { data, error } = await supabase.functions.invoke('create-manager', {
+        body: { email, password, fullName }
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Échec de la création de l'utilisateur");
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Échec de la création du gestionnaire");
 
-      // Then add the manager role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: authData.user.id,
-          role: "manager",
-        });
-
-      if (roleError) throw roleError;
-
-      return authData.user;
+      return data.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-managers"] });
