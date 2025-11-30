@@ -227,6 +227,7 @@ export type Database = {
           latitude: number | null
           location: string
           longitude: number | null
+          managed_by: string | null
           max_guests: number
           owner_id: string | null
           pets_allowed: boolean | null
@@ -255,6 +256,7 @@ export type Database = {
           latitude?: number | null
           location: string
           longitude?: number | null
+          managed_by?: string | null
           max_guests: number
           owner_id?: string | null
           pets_allowed?: boolean | null
@@ -283,6 +285,7 @@ export type Database = {
           latitude?: number | null
           location?: string
           longitude?: number | null
+          managed_by?: string | null
           max_guests?: number
           owner_id?: string | null
           pets_allowed?: boolean | null
@@ -308,6 +311,7 @@ export type Database = {
           bank_details: Json | null
           commission_rate: number | null
           created_at: string | null
+          created_by: string | null
           email: string
           id: string
           is_verified: boolean | null
@@ -319,6 +323,7 @@ export type Database = {
           bank_details?: Json | null
           commission_rate?: number | null
           created_at?: string | null
+          created_by?: string | null
           email: string
           id?: string
           is_verified?: boolean | null
@@ -330,6 +335,7 @@ export type Database = {
           bank_details?: Json | null
           commission_rate?: number | null
           created_at?: string | null
+          created_by?: string | null
           email?: string
           id?: string
           is_verified?: boolean | null
