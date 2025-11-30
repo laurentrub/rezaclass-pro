@@ -8,9 +8,11 @@ import ServicesSection from "@/components/home/ServicesSection";
 import AboutSection from "@/components/home/AboutSection";
 import InspirationSection from "@/components/home/InspirationSection";
 import NewsletterSection from "@/components/home/NewsletterSection";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 
 import apartmentParis from "@/assets/apartment-paris.jpg";
 import cottageCounryside from "@/assets/cottage-countryside.jpg";
@@ -20,38 +22,48 @@ import beachBrittany from "@/assets/beach-brittany.jpg";
 import heroVilla from "@/assets/hero-villa.jpg";
 
 const Index = () => {
-  // Charger seulement les meilleures propriétés (top 8 par note)
-  const { data: topRatedProperties, isLoading: isLoadingTopRated } = useQuery({
-    queryKey: ["properties", "top-rated"],
-    queryFn: async () => {
+  const PROPERTIES_PER_PAGE = 8;
+  
+  // Infinite query pour charger les propriétés par note
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["properties", "top-rated-infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
         .order("rating", { ascending: false })
-        .limit(8);
+        .range(pageParam, pageParam + PROPERTIES_PER_PAGE - 1);
 
       if (error) throw error;
       return data || [];
     },
-  });
-
-  // Charger les propriétés récentes (top 8)
-  const { data: recentProperties, isLoading: isLoadingRecent } = useQuery({
-    queryKey: ["properties", "recent"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(8);
-
-      if (error) throw error;
-      return data || [];
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PROPERTIES_PER_PAGE) return undefined;
+      return allPages.length * PROPERTIES_PER_PAGE;
     },
+    initialPageParam: 0,
   });
 
-  const isLoading = isLoadingTopRated || isLoadingRecent;
-  const properties = topRatedProperties || [];
+  // IntersectionObserver pour détecter quand on arrive en bas
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
+
+  // Charger la page suivante quand on arrive en bas
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Fusionner toutes les pages en un seul tableau
+  const properties = data?.pages.flat() || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,6 +117,21 @@ const Index = () => {
                 rating={Number(property.rating) || 4.5}
               />
             ))}
+          </div>
+        )}
+
+        {/* Zone de détection pour le scroll infini */}
+        {!isLoading && (
+          <div ref={ref} className="mt-8 flex justify-center">
+            {isFetchingNextPage && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <span>Chargement...</span>
+              </div>
+            )}
+            {!hasNextPage && properties.length > 0 && (
+              <p className="text-muted-foreground">Toutes les propriétés ont été chargées</p>
+            )}
           </div>
         )}
       </section>
