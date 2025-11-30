@@ -43,11 +43,24 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
     if (mode === "specific" && value.checkIn && value.checkOut) {
       return `${format(value.checkIn, "d MMM", { locale: fr })} - ${format(value.checkOut, "d MMM", { locale: fr })}`;
     }
+    
     if (mode === "flexible") {
+      // Si c'est la durée "flexible" par défaut sans mois sélectionnés
+      if (value.duration === "flexible" && (!value.months || value.months.length === 0)) {
+        return "1 semaine, Dates indifférentes";
+      }
+      
       const duration = DURATIONS.find((d) => d.value === value.duration);
-      const monthsPart = value.months?.length ? value.months.join(", ") : "1 semaine";
-      return duration ? `${duration.label}, ${monthsPart}` : "Dates flexibles";
+      const durationLabel = duration?.label || "Dates flexibles";
+      
+      // Ajouter les mois seulement s'ils sont sélectionnés
+      if (value.months?.length) {
+        return `${durationLabel}, ${value.months.join(", ")}`;
+      }
+      
+      return durationLabel;
     }
+    
     return "1 semaine, Dates indifférentes";
   };
 
