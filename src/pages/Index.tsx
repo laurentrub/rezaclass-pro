@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { PropertyCard } from "@/components/PropertyCard";
 import { WeekendGetaways } from "@/components/home/WeekendGetaways";
 import { CategoryFilters } from "@/components/home/CategoryFilters";
+import { PopularDestinations } from "@/components/home/PopularDestinations";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,9 @@ const Index = () => {
 
       {/* Category Filters Section */}
       <CategoryFilters />
+
+      {/* Popular Destinations Section */}
+      <PopularDestinations />
       
       {/* Properties Section */}
       <section className="py-20 container mx-auto px-4">
