@@ -1,4 +1,4 @@
-import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check, ChevronLeft, HelpCircle } from "lucide-react";
+import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check, ChevronLeft, HelpCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -16,7 +16,7 @@ import { ContactDialog } from "@/components/ContactDialog";
 import { useState } from "react";
 
 export const PropertyNavigation = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,14 +103,24 @@ export const PropertyNavigation = () => {
                 
                 <div className="flex flex-col gap-4 mt-6">
                   {user ? (
-                    <Button
-                      variant="ghost"
-                      className="justify-start gap-3 h-auto py-3"
-                      onClick={() => navigate("/account")}
-                    >
-                      <User size={20} />
-                      <span>Mon Compte</span>
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 h-auto py-3"
+                        onClick={() => navigate("/account")}
+                      >
+                        <User size={20} />
+                        <span>Mon Compte</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 h-auto py-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={signOut}
+                      >
+                        <LogOut size={20} />
+                        <span>Se déconnecter</span>
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       variant="ghost"
