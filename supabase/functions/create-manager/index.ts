@@ -81,6 +81,10 @@ serve(async (req) => {
 
     if (createUserError) {
       console.error('Error creating user:', createUserError);
+      // Provide a more user-friendly error message in French
+      if (createUserError.message?.includes('already been registered')) {
+        throw new Error('Un compte avec cette adresse email existe déjà. Veuillez utiliser une autre adresse email.');
+      }
       throw createUserError;
     }
 

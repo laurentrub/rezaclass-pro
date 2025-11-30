@@ -119,10 +119,11 @@ export const ManagersManager = () => {
       });
     },
     onError: (error: any) => {
+      const errorMessage = error.message || "Une erreur s'est produite lors de la création du gestionnaire";
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: error.message,
+        title: "Erreur de création",
+        description: errorMessage,
       });
     },
   });
