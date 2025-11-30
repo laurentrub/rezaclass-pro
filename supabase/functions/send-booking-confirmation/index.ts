@@ -70,6 +70,8 @@ const handler = async (req: Request): Promise<Response> => {
     });
     const bookingRef = `RES-${bookingId.slice(0, 8).toUpperCase()}`;
 
+    const frontendUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || '';
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -85,18 +87,23 @@ const handler = async (req: Request): Promise<Response> => {
             .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
             .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
             .info-label { font-weight: bold; }
+            .cta-button { display: inline-block; padding: 15px 30px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+            .status-badge { display: inline-block; padding: 8px 16px; background-color: #fbbf24; color: #78350f; border-radius: 20px; font-weight: bold; font-size: 14px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>Confirmation de Réservation</h1>
+              <h1>📋 Confirmation de Réception de Réservation</h1>
+              <div style="margin-top: 10px;">
+                <span class="status-badge">⏳ EN ATTENTE DE PAIEMENT</span>
+              </div>
             </div>
             
             <div class="content">
               <p>Bonjour ${userName},</p>
               
-              <p>Nous avons bien reçu votre demande de réservation. Voici les détails :</p>
+              <p><strong>Merci pour votre réservation !</strong> Nous avons bien reçu votre demande et celle-ci est actuellement <strong>en attente de confirmation de paiement</strong>.</p>
               
               <div class="booking-details">
                 <h2 style="margin-top: 0;">${propertyTitle}</h2>
@@ -129,19 +136,32 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="bank-details">
-                <h3 style="margin-top: 0; color: #f59e0b;">⚠️ Informations de Paiement</h3>
-                <p>Pour confirmer votre réservation, merci d'effectuer un virement bancaire avec les informations suivantes :</p>
+                <h3 style="margin-top: 0; color: #f59e0b;">💳 ÉTAPE 1 : Effectuer le virement bancaire</h3>
+                <p><strong>Pour finaliser votre réservation, veuillez effectuer un virement bancaire avec les informations suivantes :</strong></p>
                 
-                <div style="background-color: white; padding: 15px; border-radius: 4px; margin: 15px 0;">
-                  <p style="margin: 5px 0;"><strong>Titulaire du compte :</strong> Gîtes de France</p>
-                  <p style="margin: 5px 0;"><strong>IBAN :</strong> FR76 1234 5678 9012 3456 7890 123</p>
-                  <p style="margin: 5px 0;"><strong>BIC :</strong> BNPAFRPPXXX</p>
-                  <p style="margin: 5px 0;"><strong>Montant :</strong> ${booking.total_price}€</p>
-                  <p style="margin: 5px 0;"><strong>Référence à indiquer :</strong> ${bookingRef}</p>
+                <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px solid #f59e0b;">
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>Titulaire du compte :</strong> Gîtes de France</p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>IBAN :</strong> FR76 1234 5678 9012 3456 7890 123</p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>BIC :</strong> BNPAFRPPXXX</p>
+                  <p style="margin: 8px 0; font-size: 16px;"><strong>Montant à virer :</strong> <span style="color: #2563eb; font-size: 18px;">${booking.total_price}€</span></p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>Référence obligatoire :</strong> <span style="background-color: #fef3c7; padding: 4px 8px; border-radius: 4px;">${bookingRef}</span></p>
                 </div>
                 
-                <p style="margin: 10px 0; font-size: 14px;">
-                  <strong>Important :</strong> N'oubliez pas d'indiquer la référence ${bookingRef} dans le libellé de votre virement pour que nous puissions identifier votre paiement.
+                <p style="margin: 15px 0; font-size: 14px; background-color: #fee2e2; padding: 12px; border-radius: 6px; border-left: 4px solid #dc2626;">
+                  <strong>⚠️ Très important :</strong> N'oubliez surtout pas d'indiquer la référence <strong>${bookingRef}</strong> dans le libellé de votre virement. Sans cette référence, nous ne pourrons pas identifier votre paiement !
+                </p>
+
+                <h3 style="margin-top: 20px; color: #f59e0b;">📤 ÉTAPE 2 : Envoyer votre justificatif de paiement</h3>
+                <p>Après avoir effectué le virement, envoyez-nous votre justificatif bancaire (capture d'écran ou PDF) pour accélérer la validation de votre réservation :</p>
+                
+                <div style="text-align: center; margin: 25px 0;">
+                  <a href="${frontendUrl}/mon-compte?booking=${bookingId}" class="cta-button" style="color: white;">
+                    📎 Envoyer ma preuve de paiement
+                  </a>
+                </div>
+                
+                <p style="font-size: 13px; color: #6b7280; text-align: center;">
+                  Vous pouvez également envoyer votre justificatif depuis votre espace personnel à tout moment.
                 </p>
               </div>
               
@@ -152,11 +172,21 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               ` : ''}
               
-              <p>Dès réception de votre paiement, nous confirmerons définitivement votre réservation.</p>
+              <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+                <h3 style="margin-top: 0; color: #1e40af;">📋 Prochaines étapes</h3>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                  <li style="margin: 8px 0;">Effectuez le virement bancaire avec la référence ${bookingRef}</li>
+                  <li style="margin: 8px 0;">Envoyez votre justificatif de paiement via le bouton ci-dessus</li>
+                  <li style="margin: 8px 0;">Nous validerons votre paiement sous 24-48h</li>
+                  <li style="margin: 8px 0;">Vous recevrez une confirmation finale par email</li>
+                </ol>
+              </div>
               
-              <p>Vous pouvez retrouver toutes vos réservations dans votre espace personnel sur notre site.</p>
+              <p>Vous pouvez retrouver toutes vos réservations et gérer vos justificatifs dans <a href="${frontendUrl}/mon-compte" style="color: #2563eb;">votre espace personnel</a>.</p>
               
-              <p>À très bientôt,<br>L'équipe Gîte France</p>
+              <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+              
+              <p>À très bientôt,<br><strong>L'équipe Gîte France</strong></p>
             </div>
             
             <div class="footer">
