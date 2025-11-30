@@ -3,6 +3,7 @@ import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Veuillez entrer une adresse email valide");
@@ -28,15 +29,36 @@ const NewsletterSection = () => {
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Inscription réussie !",
-        description: "Vous recevrez bientôt nos meilleures offres par email.",
+    try {
+      const { data, error } = await supabase.functions.invoke('subscribe-newsletter', {
+        body: { email }
       });
-      setEmail("");
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "Erreur",
+          description: data.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Inscription réussie !",
+          description: data.message || "Vous recevrez bientôt nos meilleures offres par email.",
+        });
+        setEmail("");
+      }
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
