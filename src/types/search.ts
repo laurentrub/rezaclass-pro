@@ -19,8 +19,19 @@ export interface GuestSelection {
   children: number;
 }
 
+export interface SearchFilters {
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  bedrooms?: number;
+  amenities: string[];
+  minRating?: number;
+}
+
 export interface SearchCriteria {
   destination: Destination | null;
   dates: DateSelection;
   guests: GuestSelection;
+  filters?: SearchFilters;
 }

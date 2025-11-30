@@ -5,8 +5,9 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { SearchDestination } from "@/components/search/SearchDestination";
 import { SearchDates } from "@/components/search/SearchDates";
 import { SearchGuests } from "@/components/search/SearchGuests";
+import { SearchFilters } from "@/components/search/SearchFilters";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { SearchCriteria } from "@/types/search";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +44,10 @@ const SearchResults = () => {
         months: [],
       },
       guests: { adults, children },
+      filters: {
+        priceRange: { min: 0, max: 1000 },
+        amenities: [],
+      },
     };
   });
 
@@ -108,10 +113,12 @@ const SearchResults = () => {
               </p>
             )}
           </div>
-          <Button variant="outline" size="default">
-            <SlidersHorizontal size={18} />
-            Filtres
-          </Button>
+          <SearchFilters
+            filters={searchCriteria.filters!}
+            onChange={(filters) =>
+              setSearchCriteria({ ...searchCriteria, filters })
+            }
+          />
         </div>
 
         {/* Loading State */}
