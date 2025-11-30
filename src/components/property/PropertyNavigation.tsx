@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useLocaleSettings, Language, Currency } from "@/hooks/useLocaleSettings";
+import { ContactDialog } from "@/components/ContactDialog";
 import { useState } from "react";
 
 export const PropertyNavigation = () => {
@@ -22,6 +23,7 @@ export const PropertyNavigation = () => {
   const { language, currency, setLanguage, setCurrency } = useLocaleSettings();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const languages: Language[] = ['FR', 'EN'];
   const currencies: Currency[] = ['€', '$', '£'];
@@ -72,6 +74,7 @@ export const PropertyNavigation = () => {
             <Button
               variant="ghost"
               className="gap-2 text-muted-foreground hover:text-foreground hidden md:flex"
+              onClick={() => setShowContactDialog(true)}
             >
               <HelpCircle size={20} />
               <span>Obtenir de l'aide</span>
@@ -82,6 +85,7 @@ export const PropertyNavigation = () => {
               variant="ghost"
               size="icon"
               className="md:hidden"
+              onClick={() => setShowContactDialog(true)}
             >
               <HelpCircle size={20} />
             </Button>
@@ -129,6 +133,7 @@ export const PropertyNavigation = () => {
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto py-3"
+                    onClick={() => setShowContactDialog(true)}
                   >
                     <MessageCircle size={20} />
                     <span>Contactez-nous</span>
@@ -219,6 +224,8 @@ export const PropertyNavigation = () => {
           </div>
         </div>
       </div>
+      
+      <ContactDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
     </nav>
   );
 };

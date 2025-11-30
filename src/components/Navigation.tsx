@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useLocaleSettings, Language, Currency } from "@/hooks/useLocaleSettings";
+import { ContactDialog } from "@/components/ContactDialog";
 import { useState } from "react";
 
 export const Navigation = () => {
@@ -21,6 +22,7 @@ export const Navigation = () => {
   const { language, currency, setLanguage, setCurrency } = useLocaleSettings();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const languages: Language[] = ['FR', 'EN'];
   const currencies: Currency[] = ['€', '$', '£'];
@@ -77,6 +79,7 @@ export const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start gap-3 h-auto py-3"
+                  onClick={() => setShowContactDialog(true)}
                 >
                   <MessageCircle size={20} />
                   <span>Contactez-nous</span>
@@ -166,6 +169,8 @@ export const Navigation = () => {
           </Sheet>
         </div>
       </div>
+      
+      <ContactDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
     </nav>
   );
 };
