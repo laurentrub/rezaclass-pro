@@ -36,21 +36,48 @@ export const PropertiesManager = () => {
   const [computedLongitude, setComputedLongitude] = useState<number | null>(null);
   const [isGeocoding, setIsGeocoding] = useState(false);
   
-  // Amenities management
-  const standardAmenities = [
-    "WiFi",
-    "Cuisine équipée",
-    "Parking gratuit",
-    "Télévision",
-    "Lave-linge",
-    "Climatisation",
-    "Chauffage",
-    "Lave-vaisselle",
-    "Sèche-linge",
-    "Piscine",
-    "Jardin",
-    "Terrasse/Balcon",
-  ];
+  // Amenities management with categories
+  const amenitiesByCategory = {
+    "Confort": [
+      "WiFi",
+      "Climatisation",
+      "Chauffage",
+      "Télévision",
+      "Cheminée",
+      "Bureau/Espace de travail",
+    ],
+    "Cuisine": [
+      "Cuisine équipée",
+      "Lave-vaisselle",
+      "Micro-ondes",
+      "Four",
+      "Réfrigérateur",
+      "Machine à café",
+    ],
+    "Équipements": [
+      "Lave-linge",
+      "Sèche-linge",
+      "Fer à repasser",
+      "Aspirateur",
+    ],
+    "Extérieur": [
+      "Jardin",
+      "Terrasse/Balcon",
+      "Barbecue",
+      "Salon de jardin",
+      "Piscine",
+      "Parking gratuit",
+    ],
+    "Sécurité": [
+      "Détecteur de fumée",
+      "Extincteur",
+      "Alarme",
+      "Coffre-fort",
+    ],
+  };
+  
+  // Flatten all standard amenities for checking
+  const allStandardAmenities = Object.values(amenitiesByCategory).flat();
   
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [customAmenities, setCustomAmenities] = useState<string[]>([]);
@@ -76,8 +103,8 @@ export const PropertiesManager = () => {
         
         // Parse existing amenities
         const existingAmenities = editingProperty.amenities || [];
-        const standard = existingAmenities.filter((a: string) => standardAmenities.includes(a));
-        const custom = existingAmenities.filter((a: string) => !standardAmenities.includes(a));
+        const standard = existingAmenities.filter((a: string) => allStandardAmenities.includes(a));
+        const custom = existingAmenities.filter((a: string) => !allStandardAmenities.includes(a));
         setSelectedAmenities(standard);
         setCustomAmenities(custom);
       } else {
@@ -635,32 +662,39 @@ export const PropertiesManager = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <Label className="mb-3 block">Équipements</Label>
+                    <Label className="mb-3 block text-base font-semibold">Équipements</Label>
                     
-                    <div className="space-y-4">
-                      {/* Standard amenities */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {standardAmenities.map((amenity) => (
-                          <div key={amenity} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`amenity-${amenity}`}
-                              checked={selectedAmenities.includes(amenity)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedAmenities([...selectedAmenities, amenity]);
-                                } else {
-                                  setSelectedAmenities(selectedAmenities.filter(a => a !== amenity));
-                                }
-                              }}
-                              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                            />
-                            <Label htmlFor={`amenity-${amenity}`} className="text-sm font-normal cursor-pointer">
-                              {amenity}
-                            </Label>
+                    <div className="space-y-6">
+                      {/* Standard amenities by category */}
+                      {Object.entries(amenitiesByCategory).map(([category, amenities]) => (
+                        <div key={category} className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground border-b pb-1">
+                            {category}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-3 pl-2">
+                            {amenities.map((amenity) => (
+                              <div key={amenity} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`amenity-${amenity}`}
+                                  checked={selectedAmenities.includes(amenity)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedAmenities([...selectedAmenities, amenity]);
+                                    } else {
+                                      setSelectedAmenities(selectedAmenities.filter(a => a !== amenity));
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <Label htmlFor={`amenity-${amenity}`} className="text-sm font-normal cursor-pointer">
+                                  {amenity}
+                                </Label>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                       
                       {/* Custom amenities */}
                       {customAmenities.length > 0 && (
