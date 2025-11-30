@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdmin } from "@/hooks/useAdmin";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,16 +14,16 @@ import { Shield } from "lucide-react";
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isLoading: adminLoading } = useAdmin();
+  const { hasAdminRole, role, isLoading: adminLoading } = useAnyAdminRole();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
-    } else if (!adminLoading && !isAdmin && user) {
+    } else if (!adminLoading && !hasAdminRole && user) {
       navigate("/");
     }
-  }, [user, isAdmin, authLoading, adminLoading, navigate]);
+  }, [user, hasAdminRole, authLoading, adminLoading, navigate]);
 
   if (authLoading || adminLoading) {
     return (
@@ -37,7 +37,7 @@ const Admin = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!hasAdminRole) {
     return null;
   }
 
@@ -49,7 +49,9 @@ const Admin = () => {
         <div className="flex items-center gap-3 mb-8">
           <Shield className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-4xl font-bold">Tableau de Bord Admin</h1>
+            <h1 className="text-4xl font-bold">
+              Tableau de Bord {role === "admin" ? "Admin" : "Manager"}
+            </h1>
             <p className="text-muted-foreground mt-2">
               Gérez les propriétés et les réservations
             </p>

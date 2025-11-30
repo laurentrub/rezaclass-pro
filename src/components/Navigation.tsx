@@ -1,7 +1,7 @@
 import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdmin } from "@/hooks/useAdmin";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -17,7 +17,7 @@ import { useState } from "react";
 
 export const Navigation = () => {
   const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { hasAdminRole } = useAnyAdminRole();
   const navigate = useNavigate();
   const { language, currency, setLanguage, setCurrency } = useLocaleSettings();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -151,7 +151,7 @@ export const Navigation = () => {
                   )}
                 </div>
                 
-                {isAdmin && (
+                {hasAdminRole && (
                   <>
                     <Separator className="my-2" />
                     <Button

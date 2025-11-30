@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -19,28 +21,39 @@ export const BookingsManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { isManager } = useAnyAdminRole();
 
   const { data: bookings, isLoading } = useQuery({
-    queryKey: ["admin-bookings"],
+    queryKey: ["admin-bookings", user?.id, isManager],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!user) return [];
+      
+      const query = supabase
         .from("bookings")
         .select(`
           *,
-          properties (
+          properties!inner(
             title, 
             location,
+            managed_by,
             property_owners (
               name,
               commission_rate
             )
           ),
           profiles (full_name, email, phone)
-        `)
-        .order("created_at", { ascending: false });
+        `) as any;
+        
+      // Managers can only see bookings for properties they manage
+      if (isManager) {
+        query.eq("properties.managed_by", user.id);
+      }
+      
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
