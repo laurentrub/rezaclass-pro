@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Filter, DollarSign, User, Mail, Calendar, MapPin, Users, Euro } from "lucide-react";
+import { Filter, DollarSign, User, Mail, Calendar, MapPin, Users, Euro, FileText, Download, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -140,6 +140,7 @@ export const BookingsManager = () => {
   const getPaymentStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       pending: "En attente",
+      proof_submitted: "Justificatif envoyé",
       received: "Reçu",
       transferred_to_owner: "Transféré",
     };
@@ -188,6 +189,7 @@ export const BookingsManager = () => {
             <SelectContent>
               <SelectItem value="all">Tous paiements</SelectItem>
               <SelectItem value="pending">En attente</SelectItem>
+              <SelectItem value="proof_submitted">Justificatif envoyé</SelectItem>
               <SelectItem value="received">Reçu</SelectItem>
               <SelectItem value="transferred_to_owner">Transféré</SelectItem>
             </SelectContent>
@@ -248,6 +250,43 @@ export const BookingsManager = () => {
                   </div>
                 </div>
 
+                {booking.payment_proof_url && (
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="font-semibold text-blue-900">Justificatif de paiement reçu</p>
+                          <p className="text-sm text-blue-700">Le client a envoyé son justificatif bancaire</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(booking.payment_proof_url, '_blank')}
+                        >
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Voir
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = booking.payment_proof_url;
+                            link.download = `justificatif-${booking.id}.pdf`;
+                            link.click();
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Télécharger
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {booking.properties?.property_owners && (
                   <div className="bg-muted/50 p-3 rounded-lg space-y-2 text-sm">
                     <p className="font-semibold">Détails financiers</p>
@@ -279,6 +318,7 @@ export const BookingsManager = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="pending">En attente</SelectItem>
+                            <SelectItem value="proof_submitted">Justificatif envoyé</SelectItem>
                             <SelectItem value="received">Reçu</SelectItem>
                             <SelectItem value="transferred_to_owner">Transféré</SelectItem>
                           </SelectContent>

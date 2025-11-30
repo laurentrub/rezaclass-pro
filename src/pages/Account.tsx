@@ -15,6 +15,9 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { PaymentProofUpload } from "@/components/PaymentProofUpload";
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100, "Le nom ne peut pas dépasser 100 caractères"),
@@ -27,6 +30,8 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 const Account = () => {
   const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const bookingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", user?.id],
@@ -131,6 +136,45 @@ const Account = () => {
     }
   };
 
+  const getPaymentStatusLabel = (status: string) => {
+    switch (status) {
+      case "proof_submitted":
+        return "Justificatif envoyé";
+      case "received":
+        return "Paiement reçu";
+      case "pending":
+        return "En attente de paiement";
+      default:
+        return status;
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "proof_submitted":
+        return "bg-blue-500";
+      case "received":
+        return "bg-green-500";
+      case "pending":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // Scroll to booking if ID is in URL
+  useEffect(() => {
+    const bookingId = searchParams.get('booking');
+    if (bookingId && bookingRefs.current[bookingId]) {
+      setTimeout(() => {
+        bookingRefs.current[bookingId]?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 500);
+    }
+  }, [searchParams, bookings]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -232,7 +276,11 @@ const Account = () => {
               ) : bookings && bookings.length > 0 ? (
                 <div className="space-y-4">
                   {bookings.map((booking: any) => (
-                    <Card key={booking.id} className="overflow-hidden">
+                    <Card 
+                      key={booking.id} 
+                      ref={(el) => bookingRefs.current[booking.id] = el}
+                      className="overflow-hidden"
+                    >
                       <div className="flex flex-col md:flex-row">
                         {booking.properties?.image_url && (
                           <div className="md:w-48 h-48 md:h-auto">
@@ -254,9 +302,14 @@ const Account = () => {
                                 {booking.properties?.location}
                               </div>
                             </div>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusLabel(booking.status)}
-                            </Badge>
+                            <div className="flex flex-col gap-2 items-end">
+                              <Badge className={getStatusColor(booking.status)}>
+                                {getStatusLabel(booking.status)}
+                              </Badge>
+                              <Badge className={getPaymentStatusColor(booking.payment_status)}>
+                                {getPaymentStatusLabel(booking.payment_status)}
+                              </Badge>
+                            </div>
                           </div>
                           
                           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -294,12 +347,31 @@ const Account = () => {
                             </div>
                           </div>
 
-                          {booking.status === "pending" && (
+                          {booking.status === "pending" && booking.payment_status === "pending" && !booking.payment_proof_url && (
+                            <div className="mt-4">
+                              <PaymentProofUpload 
+                                bookingId={booking.id}
+                                onUploadComplete={() => {
+                                  queryClient.invalidateQueries({ queryKey: ["bookings", user?.id] });
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          {booking.payment_status === "proof_submitted" && (
                             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                              <p className="font-medium mb-2 text-blue-900">Confirmation en cours</p>
+                              <p className="font-medium mb-2 text-blue-900">✅ Justificatif reçu</p>
                               <p className="text-sm text-blue-700">
-                                Un email contenant les instructions de paiement vous a été envoyé à votre adresse email. 
-                                Veuillez consulter votre boîte de réception pour finaliser votre réservation.
+                                Nous avons bien reçu votre justificatif de paiement. Nous sommes en train de vérifier votre virement et vous recevrez une confirmation sous 24-48h.
+                              </p>
+                            </div>
+                          )}
+
+                          {booking.status === "confirmed" && booking.payment_status === "received" && (
+                            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                              <p className="font-medium mb-2 text-green-900">✅ Réservation confirmée</p>
+                              <p className="text-sm text-green-700">
+                                Votre paiement a été validé et votre réservation est confirmée. Nous avons hâte de vous accueillir !
                               </p>
                             </div>
                           )}

@@ -59,6 +59,7 @@ export type Database = {
           guests: number
           id: string
           owner_payout_amount: number | null
+          payment_proof_url: string | null
           payment_status: string | null
           property_id: string
           special_requests: string | null
@@ -76,6 +77,7 @@ export type Database = {
           guests: number
           id?: string
           owner_payout_amount?: number | null
+          payment_proof_url?: string | null
           payment_status?: string | null
           property_id: string
           special_requests?: string | null
@@ -93,6 +95,7 @@ export type Database = {
           guests?: number
           id?: string
           owner_payout_amount?: number | null
+          payment_proof_url?: string | null
           payment_status?: string | null
           property_id?: string
           special_requests?: string | null
