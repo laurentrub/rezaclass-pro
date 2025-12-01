@@ -41,15 +41,32 @@ export const PropertyAssignment = () => {
           id,
           title,
           location,
-          managed_by,
-          profiles:managed_by (
-            full_name,
-            email
-          )
+          managed_by
         `)
         .order("title");
 
       if (error) throw error;
+
+      // Fetch manager profiles separately to avoid join issues
+      if (data && data.length > 0) {
+        const managerIds = data
+          .filter(p => p.managed_by)
+          .map(p => p.managed_by);
+
+        if (managerIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, full_name, email")
+            .in("id", managerIds);
+
+          // Map profiles to properties
+          return data.map(property => ({
+            ...property,
+            profiles: profiles?.find(p => p.id === property.managed_by)
+          }));
+        }
+      }
+
       return data;
     },
     enabled: !!user,
@@ -60,17 +77,26 @@ export const PropertyAssignment = () => {
     queryFn: async () => {
       const { data: userRoles, error } = await supabase
         .from("user_roles")
-        .select(`
-          user_id,
-          profiles:user_id (
-            full_name,
-            email
-          )
-        `)
+        .select("user_id")
         .eq("role", "manager")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
+
+      // Fetch profiles separately
+      if (userRoles && userRoles.length > 0) {
+        const userIds = userRoles.map(ur => ur.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
+
+        return userRoles.map(ur => ({
+          user_id: ur.user_id,
+          profiles: profiles?.find(p => p.id === ur.user_id)
+        }));
+      }
+
       return userRoles;
     },
     enabled: !!user,
