@@ -26,18 +26,13 @@ export const CategoryFilters = () => {
       let query = supabase
         .from("properties")
         .select("*")
+        .eq("status", "active")
         .order("rating", { ascending: false })
         .limit(8);
 
       if (selectedCategory) {
-        const category = categories.find(c => c.id === selectedCategory);
-        if (category) {
-          // Filter by keywords in title, description, or amenities
-          const orConditions = category.keywords.map(keyword => 
-            `title.ilike.%${keyword}%,description.ilike.%${keyword}%,location.ilike.%${keyword}%`
-          ).join(',');
-          query = query.or(orConditions);
-        }
+        // Filter by property_type column
+        query = query.eq("property_type", selectedCategory);
       }
 
       const { data, error } = await query;
