@@ -15,6 +15,8 @@ import { Filter, DollarSign, User, Mail, Calendar, MapPin, Users, Euro, FileText
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+
 export const BookingsManager = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
@@ -23,6 +25,9 @@ export const BookingsManager = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { isManager } = useAnyAdminRole();
+
+  // Set up realtime subscriptions
+  useRealtimeBookings(user?.id, isManager);
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ["admin-bookings", user?.id, isManager],
