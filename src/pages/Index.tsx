@@ -192,7 +192,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="font-bold text-lg mb-4 text-card-foreground">VacancesFrance</h3>
+              <h3 className="font-bold text-lg mb-4 text-card-foreground">Rezaclass</h3>
               <p className="text-muted-foreground">
                 Votre partenaire de confiance pour des locations de vacances exceptionnelles en France.
               </p>
@@ -215,7 +215,7 @@ const Index = () => {
             </div>
           </div>
           <div className="text-center pt-8 border-t border-border text-muted-foreground">
-            <p>© 2025 VacancesFrance. Tous droits réservés.</p>
+            <p>© 2025 Rezaclass. Tous droits réservés.</p>
           </div>
         </div>
       </footer>

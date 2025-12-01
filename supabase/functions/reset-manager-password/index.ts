@@ -87,9 +87,9 @@ serve(async (req) => {
 
     // Send the password reset email
     const emailResponse = await resend.emails.send({
-      from: "VacancesFrance <onboarding@resend.dev>",
+      from: "Rezaclass <onboarding@resend.dev>",
       to: [email],
-      subject: "Réinitialisation de votre mot de passe - VacancesFrance",
+      subject: "Réinitialisation de votre mot de passe - Rezaclass",
       html: `
         <!DOCTYPE html>
         <html>
@@ -100,7 +100,7 @@ serve(async (req) => {
           </head>
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">🏖️ VacancesFrance</h1>
+              <h1 style="color: white; margin: 0; font-size: 28px;">🏖️ Rezaclass</h1>
             </div>
             
             <div style="background-color: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px;">
@@ -133,7 +133,7 @@ serve(async (req) => {
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
               
               <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-                © 2025 VacancesFrance - Plateforme de gestion de locations saisonnières
+                © 2025 Rezaclass - Plateforme de gestion de locations saisonnières
               </p>
             </div>
           </body>

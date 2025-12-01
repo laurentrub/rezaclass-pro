@@ -92,7 +92,7 @@ const NewsletterPreferences = () => {
               </div>
               <CardTitle>Préférences Newsletter</CardTitle>
               <CardDescription>
-                Gérez votre abonnement à la newsletter VacancesFrance
+                Gérez votre abonnement à la newsletter Rezaclass
               </CardDescription>
             </>
           )}

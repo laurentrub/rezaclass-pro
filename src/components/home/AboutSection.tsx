@@ -14,24 +14,24 @@ const AboutSection = () => {
           {/* First Block */}
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-              VacancesFrance réinvente la location de vacances
+              Rezaclass réinvente la location de vacances
             </h2>
             <div className="text-lg text-muted-foreground space-y-4">
               <p>
-                Saviez-vous que VacancesFrance vous propose des milliers de locations de vacances à travers la France ? 
+                Saviez-vous que Rezaclass vous propose des milliers de locations de vacances à travers la France ? 
                 De quoi trouver un espace confortable et hors du temps pour vous offrir une délicieuse parenthèse, 
                 que vous rêviez d'un séjour en famille, d'un périple sportif entre amis ou d'une escapade romantique.
               </p>
               <p>
-                Et parce que les vacances doivent être un plaisir de A à Z, la réservation via VacancesFrance 
+                Et parce que les vacances doivent être un plaisir de A à Z, la réservation via Rezaclass 
                 vous permet de bénéficier de notre <span className="text-primary font-semibold">garantie réservation en toute confiance</span> et ce, 
                 de la date de votre paiement sur notre plateforme jusqu'à votre retour à la maison. 
-                En d'autres termes, lorsque vous réservez et payez par VacancesFrance, nous sommes là pour vous, 
+                En d'autres termes, lorsque vous réservez et payez par Rezaclass, nous sommes là pour vous, 
                 avant, pendant et même après votre séjour.
               </p>
               <p>
                 Pour votre sécurité, ne donnez jamais suite aux messages de personnes vous demandant de réserver 
-                ou de payer directement auprès d'elles sans effectuer de réservation sur VacancesFrance.
+                ou de payer directement auprès d'elles sans effectuer de réservation sur Rezaclass.
               </p>
             </div>
           </div>

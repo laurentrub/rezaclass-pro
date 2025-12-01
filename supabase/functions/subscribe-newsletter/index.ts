@@ -72,9 +72,9 @@ Deno.serve(async (req) => {
     // Send confirmation email
     try {
       const emailResponse = await resend.emails.send({
-        from: 'VacancesFrance <onboarding@resend.dev>',
+        from: 'Rezaclass <onboarding@resend.dev>',
         to: [email],
-        subject: 'Bienvenue à VacancesFrance - Confirmation d\'inscription',
+        subject: 'Bienvenue à Rezaclass - Confirmation d\'inscription',
         html: `
           <!DOCTYPE html>
           <html>
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
             <body>
               <div class="container">
                 <div class="header">
-                  <h1>🏖️ Bienvenue à VacancesFrance !</h1>
+                  <h1>🏖️ Bienvenue à Rezaclass !</h1>
                 </div>
                 <div class="content">
                   <p>Bonjour,</p>
@@ -112,12 +112,12 @@ Deno.serve(async (req) => {
                   </p>
                   <p>À très bientôt pour de belles découvertes !</p>
                   <p style="margin-top: 30px;">
-                    L'équipe VacancesFrance
+                    L'équipe Rezaclass
                   </p>
                 </div>
                 <div class="footer">
                   <p>Vous recevez cet email car vous vous êtes inscrit à notre newsletter.</p>
-                  <p>VacancesFrance - Votre partenaire de confiance pour des vacances exceptionnelles en France</p>
+                  <p>Rezaclass - Votre partenaire de confiance pour des vacances exceptionnelles en France</p>
                   <p style="margin-top: 10px;">
                     <a href="${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '') || 'https://votre-site.com'}/newsletter/preferences?email=${encodeURIComponent(email)}" style="color: #0066CC; text-decoration: underline;">
                       Se désinscrire
