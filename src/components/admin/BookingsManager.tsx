@@ -24,7 +24,7 @@ export const BookingsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { isManager } = useAnyAdminRole();
+  const { isManager, isLoading: roleLoading } = useAnyAdminRole();
 
   // Set up realtime subscriptions
   useRealtimeBookings(user?.id, isManager);
@@ -60,6 +60,7 @@ export const BookingsManager = () => {
       if (error) throw error;
       return data || [];
     },
+    enabled: !!user && !roleLoading,
   });
 
   const fetchPaymentHistory = async (bookingId: string) => {
@@ -198,7 +199,7 @@ export const BookingsManager = () => {
     return labels[status] || status;
   };
 
-  if (isLoading) {
+  if (isLoading || roleLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
