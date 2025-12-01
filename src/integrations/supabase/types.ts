@@ -263,7 +263,7 @@ export type Database = {
           owner_id: string | null
           pets_allowed: boolean | null
           price_per_night: number
-          property_type: string | null
+          property_type: string[] | null
           rating: number | null
           service_fee: number | null
           smoking_allowed: boolean | null
@@ -293,7 +293,7 @@ export type Database = {
           owner_id?: string | null
           pets_allowed?: boolean | null
           price_per_night: number
-          property_type?: string | null
+          property_type?: string[] | null
           rating?: number | null
           service_fee?: number | null
           smoking_allowed?: boolean | null
@@ -323,7 +323,7 @@ export type Database = {
           owner_id?: string | null
           pets_allowed?: boolean | null
           price_per_night?: number
-          property_type?: string | null
+          property_type?: string[] | null
           rating?: number | null
           service_fee?: number | null
           smoking_allowed?: boolean | null

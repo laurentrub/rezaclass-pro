@@ -82,6 +82,18 @@ export const PropertiesManager = () => {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [customAmenities, setCustomAmenities] = useState<string[]>([]);
   const [newAmenityName, setNewAmenityName] = useState("");
+  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([]);
+  
+  const propertyTypes = [
+    { id: "seaside", name: "Bord de mer" },
+    { id: "pool", name: "Piscines" },
+    { id: "cabin", name: "Cabanes" },
+    { id: "lake", name: "Lac" },
+    { id: "family", name: "Familial" },
+    { id: "mountain", name: "Montagnes" },
+    { id: "wellness", name: "Bien-être" },
+    { id: "pets", name: "Animaux acceptés" },
+  ];
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -107,6 +119,9 @@ export const PropertiesManager = () => {
         const custom = existingAmenities.filter((a: string) => !allStandardAmenities.includes(a));
         setSelectedAmenities(standard);
         setCustomAmenities(custom);
+        
+        // Parse existing property types
+        setSelectedPropertyTypes(editingProperty.property_type || []);
       } else {
         setAddressStreet("");
         setAddressPostalCode("");
@@ -115,10 +130,11 @@ export const PropertiesManager = () => {
         setComputedLongitude(null);
         setSelectedAmenities([]);
         setCustomAmenities([]);
+        setSelectedPropertyTypes([]);
       }
       setNewAmenityName("");
     }
-  }, [isDialogOpen, editingProperty]);
+  }, [isDialogOpen, editingProperty, allStandardAmenities]);
 
   // Auto-geocode when address fields change
   useEffect(() => {
@@ -353,7 +369,7 @@ export const PropertiesManager = () => {
         amenities: allAmenities,
         owner_id: ownerId === "none" ? null : ownerId,
         status: formData.get("status") as string || "active",
-        property_type: formData.get("property_type") as string || null,
+        property_type: selectedPropertyTypes.length > 0 ? selectedPropertyTypes : null,
         available_from: formData.get("available_from") as string || null,
         available_until: formData.get("available_until") as string || null,
       };
@@ -516,23 +532,35 @@ export const PropertiesManager = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <Label htmlFor="property_type">Type d'hébergement</Label>
-                    <Select name="property_type" defaultValue={editingProperty?.property_type || ""}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un type" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background z-50">
-                        <SelectItem value="">Aucun type spécifique</SelectItem>
-                        <SelectItem value="seaside">Bord de mer</SelectItem>
-                        <SelectItem value="pool">Piscines</SelectItem>
-                        <SelectItem value="cabin">Cabanes</SelectItem>
-                        <SelectItem value="lake">Lac</SelectItem>
-                        <SelectItem value="family">Familial</SelectItem>
-                        <SelectItem value="mountain">Montagnes</SelectItem>
-                        <SelectItem value="wellness">Bien-être</SelectItem>
-                        <SelectItem value="pets">Animaux acceptés</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Types d'hébergement</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Sélectionnez un ou plusieurs types correspondant à cette propriété
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {propertyTypes.map((type) => (
+                        <div key={type.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`type-${type.id}`}
+                            checked={selectedPropertyTypes.includes(type.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedPropertyTypes([...selectedPropertyTypes, type.id]);
+                              } else {
+                                setSelectedPropertyTypes(selectedPropertyTypes.filter(t => t !== type.id));
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                          />
+                          <label
+                            htmlFor={`type-${type.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {type.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div>

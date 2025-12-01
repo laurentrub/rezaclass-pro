@@ -31,8 +31,8 @@ export const CategoryFilters = () => {
         .limit(8);
 
       if (selectedCategory) {
-        // Filter by property_type column
-        query = query.eq("property_type", selectedCategory);
+        // Filter by property_type array using @> (contains) operator
+        query = query.contains("property_type", [selectedCategory]);
       }
 
       const { data, error } = await query;
