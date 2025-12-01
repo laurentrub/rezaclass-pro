@@ -11,8 +11,10 @@ import NewsletterSection from "@/components/home/NewsletterSection";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowUpDown } from "lucide-react";
 
 import apartmentParis from "@/assets/apartment-paris.jpg";
 import cottageCounryside from "@/assets/cottage-countryside.jpg";
@@ -21,10 +23,13 @@ import chaletAlps from "@/assets/chalet-alps.jpg";
 import beachBrittany from "@/assets/beach-brittany.jpg";
 import heroVilla from "@/assets/hero-villa.jpg";
 
+type SortOption = "rating" | "price_asc" | "price_desc" | "recent";
+
 const Index = () => {
   const PROPERTIES_PER_PAGE = 8;
+  const [sortBy, setSortBy] = useState<SortOption>("rating");
   
-  // Infinite query pour charger les propriétés par note
+  // Infinite query pour charger les propriétés avec tri
   const {
     data,
     fetchNextPage,
@@ -32,13 +37,31 @@ const Index = () => {
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ["properties", "top-rated-infinite"],
+    queryKey: ["properties", "sorted", sortBy],
     queryFn: async ({ pageParam = 0 }) => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("properties")
-        .select("*")
-        .order("rating", { ascending: false })
-        .range(pageParam, pageParam + PROPERTIES_PER_PAGE - 1);
+        .select("*");
+
+      // Appliquer l'ordre de tri
+      switch (sortBy) {
+        case "rating":
+          query = query.order("rating", { ascending: false });
+          break;
+        case "price_asc":
+          query = query.order("price_per_night", { ascending: true });
+          break;
+        case "price_desc":
+          query = query.order("price_per_night", { ascending: false });
+          break;
+        case "recent":
+          query = query.order("created_at", { ascending: false });
+          break;
+      }
+
+      query = query.range(pageParam, pageParam + PROPERTIES_PER_PAGE - 1);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data || [];
@@ -84,13 +107,32 @@ const Index = () => {
       
       {/* Properties Section */}
       <section className="py-20 container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            Nos meilleures locations
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Découvrez notre sélection des hébergements les mieux notés
-          </p>
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+              Nos meilleures locations
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Découvrez notre sélection des hébergements les mieux notés
+            </p>
+          </div>
+
+          {/* Sélecteur de tri */}
+          <div className="flex justify-end items-center gap-2 max-w-7xl mx-auto">
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Trier par:</span>
+            <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">Meilleure note</SelectItem>
+                <SelectItem value="price_asc">Prix croissant</SelectItem>
+                <SelectItem value="price_desc">Prix décroissant</SelectItem>
+                <SelectItem value="recent">Plus récent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {isLoading ? (
