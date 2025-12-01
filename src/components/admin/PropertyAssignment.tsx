@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Shield, ArrowRight } from "lucide-react";
+import { Home, Shield, ArrowRight, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -24,11 +24,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const PropertyAssignment = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedManager, setSelectedManager] = useState<string>("");
   const [filterManager, setFilterManager] = useState<string>("all");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<any>(null);
+  const [newManagerId, setNewManagerId] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -143,6 +154,24 @@ export const PropertyAssignment = () => {
 
     const managerId = selectedManager === "none" ? null : selectedManager;
     assignMutation.mutate({ propertyId: selectedProperty, managerId });
+  };
+
+  const handleRowClick = (property: any) => {
+    setEditingProperty(property);
+    setNewManagerId(property.managed_by || "none");
+    setEditDialogOpen(true);
+  };
+
+  const handleEditAssign = () => {
+    if (!editingProperty) return;
+    
+    const managerId = newManagerId === "none" ? null : newManagerId;
+    assignMutation.mutate({ 
+      propertyId: editingProperty.id, 
+      managerId 
+    });
+    setEditDialogOpen(false);
+    setEditingProperty(null);
   };
 
   // Filter properties based on selected manager
@@ -269,7 +298,11 @@ export const PropertyAssignment = () => {
                 </TableRow>
               ) : (
                 filteredProperties?.map((property: any) => (
-                <TableRow key={property.id}>
+                <TableRow 
+                  key={property.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleRowClick(property)}
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <Home className="w-4 h-4 text-primary" />
@@ -278,16 +311,19 @@ export const PropertyAssignment = () => {
                   </TableCell>
                   <TableCell>{property.location}</TableCell>
                   <TableCell>
-                    {property.managed_by ? (
-                      <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-primary" />
-                        <span className="text-sm">
-                          {property.profiles?.full_name || property.profiles?.email || "Gestionnaire"}
-                        </span>
-                      </div>
-                    ) : (
-                      <Badge variant="outline">Non attribué</Badge>
-                    )}
+                    <div className="flex items-center justify-between">
+                      {property.managed_by ? (
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-primary" />
+                          <span className="text-sm">
+                            {property.profiles?.full_name || property.profiles?.email || "Gestionnaire"}
+                          </span>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">Non attribué</Badge>
+                      )}
+                      <Edit className="w-4 h-4 text-muted-foreground" />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -296,6 +332,75 @@ export const PropertyAssignment = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réattribuer la propriété</DialogTitle>
+            <DialogDescription>
+              Modifier le gestionnaire de "{editingProperty?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Propriété</Label>
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                <Home className="w-4 h-4 text-primary" />
+                <span className="font-medium">{editingProperty?.title}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Gestionnaire actuel</Label>
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                {editingProperty?.managed_by ? (
+                  <>
+                    <Shield className="w-4 h-4 text-primary" />
+                    <span className="text-sm">
+                      {editingProperty?.profiles?.full_name || editingProperty?.profiles?.email || "Gestionnaire"}
+                    </span>
+                  </>
+                ) : (
+                  <Badge variant="outline">Non attribué</Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-manager">Nouveau gestionnaire</Label>
+              <Select value={newManagerId} onValueChange={setNewManagerId}>
+                <SelectTrigger id="new-manager">
+                  <SelectValue placeholder="Sélectionner un gestionnaire" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun gestionnaire</SelectItem>
+                  {managers?.map((manager: any) => (
+                    <SelectItem key={manager.user_id} value={manager.user_id}>
+                      {manager.profiles?.full_name || manager.profiles?.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleEditAssign}
+              disabled={assignMutation.isPending}
+            >
+              {assignMutation.isPending ? "Attribution..." : "Confirmer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
