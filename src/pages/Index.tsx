@@ -200,17 +200,17 @@ const Index = () => {
             <div>
               <h3 className="font-bold text-lg mb-4 text-card-foreground">Liens rapides</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">À propos</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Destinations</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
+                <li><a href="/about" className="hover:text-primary transition-colors">À propos</a></li>
+                <li><a href="/destinations" className="hover:text-primary transition-colors">Destinations</a></li>
+                <li><a href="/contact" className="hover:text-primary transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4 text-card-foreground">Légal</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Conditions générales</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Politique de confidentialité</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Mentions légales</a></li>
+                <li><a href="/terms-of-service" className="hover:text-primary transition-colors">Conditions générales</a></li>
+                <li><a href="/privacy-policy" className="hover:text-primary transition-colors">Politique de confidentialité</a></li>
+                <li><a href="/legal-notice" className="hover:text-primary transition-colors">Mentions légales</a></li>
               </ul>
             </div>
           </div>
