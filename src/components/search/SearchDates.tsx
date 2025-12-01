@@ -103,9 +103,19 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start" sideOffset={8}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as "flexible" | "specific")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 m-2">
-            <TabsTrigger value="flexible">Dates flexibles</TabsTrigger>
-            <TabsTrigger value="specific">Dates spécifiques</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-2 rounded-none border-b bg-muted/50 p-1">
+            <TabsTrigger 
+              value="flexible"
+              className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Dates flexibles
+            </TabsTrigger>
+            <TabsTrigger 
+              value="specific"
+              className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Dates spécifiques
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="flexible" className="p-6 space-y-6 m-0">
