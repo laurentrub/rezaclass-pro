@@ -353,6 +353,7 @@ export const PropertiesManager = () => {
         amenities: allAmenities,
         owner_id: ownerId === "none" ? null : ownerId,
         status: formData.get("status") as string || "active",
+        property_type: formData.get("property_type") as string || null,
         available_from: formData.get("available_from") as string || null,
         available_until: formData.get("available_until") as string || null,
       };
@@ -512,6 +513,26 @@ export const PropertiesManager = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label htmlFor="property_type">Type d'hébergement</Label>
+                    <Select name="property_type" defaultValue={editingProperty?.property_type || ""}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="">Aucun type spécifique</SelectItem>
+                        <SelectItem value="seaside">Bord de mer</SelectItem>
+                        <SelectItem value="pool">Piscines</SelectItem>
+                        <SelectItem value="cabin">Cabanes</SelectItem>
+                        <SelectItem value="lake">Lac</SelectItem>
+                        <SelectItem value="family">Familial</SelectItem>
+                        <SelectItem value="mountain">Montagnes</SelectItem>
+                        <SelectItem value="wellness">Bien-être</SelectItem>
+                        <SelectItem value="pets">Animaux acceptés</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
