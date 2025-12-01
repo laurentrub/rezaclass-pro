@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollToTopOnRouteChange } from "@/components/ScrollToTopOnRouteChange";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import PropertyDetail from "./pages/PropertyDetail";
@@ -31,6 +32,7 @@ const App = () => (
       <ScrollToTop />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTopOnRouteChange />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search" element={<SearchResults />} />
