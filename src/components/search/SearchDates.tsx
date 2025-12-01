@@ -101,11 +101,11 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
           <div className="flex-1 text-sm">{getDateSummary()}</div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start" sideOffset={8}>
+      <PopoverContent className="w-auto p-0" align="start" sideOffset={8}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as "flexible" | "specific")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 m-2">
-            <TabsTrigger value="flexible">Flexibles</TabsTrigger>
-            <TabsTrigger value="specific">Spécifiques</TabsTrigger>
+            <TabsTrigger value="flexible">Dates flexibles</TabsTrigger>
+            <TabsTrigger value="specific">Dates spécifiques</TabsTrigger>
           </TabsList>
 
           <TabsContent value="flexible" className="p-6 space-y-6 m-0">
@@ -150,31 +150,21 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="specific" className="p-6 m-0">
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-semibold mb-3">Date d'arrivée</h4>
-                <Calendar
-                  mode="single"
-                  selected={value.checkIn}
-                  onSelect={(date) => handleSpecificDateChange(date, value.checkOut)}
-                  disabled={(date) => date < new Date()}
-                  className="pointer-events-auto rounded-md border"
-                />
-              </div>
-              {value.checkIn && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-3">Date de départ</h4>
-                  <Calendar
-                    mode="single"
-                    selected={value.checkOut}
-                    onSelect={(date) => handleSpecificDateChange(value.checkIn, date)}
-                    disabled={(date) => date < (value.checkIn || new Date())}
-                    className="pointer-events-auto rounded-md border"
-                  />
-                </div>
-              )}
-            </div>
+          <TabsContent value="specific" className="p-4 m-0">
+            <Calendar
+              mode="range"
+              selected={{
+                from: value.checkIn,
+                to: value.checkOut,
+              }}
+              onSelect={(range) => {
+                handleSpecificDateChange(range?.from, range?.to);
+              }}
+              disabled={(date) => date < new Date()}
+              numberOfMonths={2}
+              locale={fr}
+              className="pointer-events-auto"
+            />
           </TabsContent>
         </Tabs>
       </PopoverContent>
