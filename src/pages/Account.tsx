@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { PaymentProofUpload } from "@/components/PaymentProofUpload";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").max(100, "Le nom ne peut pas dépasser 100 caractères"),
@@ -396,6 +397,8 @@ const Account = () => {
           </Card>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

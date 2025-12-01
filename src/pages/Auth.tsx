@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Footer } from "@/components/Footer";
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -216,6 +217,7 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      <Footer />
     </div>
   );
 };

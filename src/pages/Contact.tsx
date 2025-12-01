@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { ContactDialog } from "@/components/ContactDialog";
+import { Footer } from "@/components/Footer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
@@ -130,6 +131,7 @@ const Contact = () => {
       </main>
 
       <ContactDialog open={showContactDialog} onOpenChange={setShowContactDialog} />
+      <Footer />
     </div>
   );
 };

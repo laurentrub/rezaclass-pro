@@ -11,6 +11,7 @@ import { Search } from "lucide-react";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { SearchCriteria } from "@/types/search";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Footer } from "@/components/Footer";
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -169,27 +170,7 @@ const SearchResults = () => {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="bg-muted mt-16 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="font-bold mb-4">À propos</h3>
-              <p className="text-muted-foreground">
-                Locations de vacances exceptionnelles en France
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Contact</h3>
-              <p className="text-muted-foreground">contact@example.com</p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Légal</h3>
-              <p className="text-muted-foreground">Mentions légales</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

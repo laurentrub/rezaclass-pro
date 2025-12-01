@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, CheckCircle } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const NewsletterPreferences = () => {
   const [searchParams] = useSearchParams();
@@ -151,6 +152,7 @@ const NewsletterPreferences = () => {
           )}
         </CardContent>
       </Card>
+      <Footer />
     </div>
   );
 };
