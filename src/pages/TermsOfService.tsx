@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 const TermsOfService = () => {
   return (
@@ -140,6 +141,8 @@ const TermsOfService = () => {
           </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

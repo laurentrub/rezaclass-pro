@@ -13,6 +13,7 @@ import { Dashboard } from "@/components/admin/Dashboard";
 import { ManagersManager } from "@/components/admin/ManagersManager";
 import { PropertyAssignment } from "@/components/admin/PropertyAssignment";
 import { Shield } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
@@ -108,6 +109,8 @@ const Admin = () => {
           )}
         </Tabs>
       </section>
+
+      <Footer />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { destinations } from "@/constants/destinations";
 
@@ -76,6 +77,8 @@ const Destinations = () => {
           </div>
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 };

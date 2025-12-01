@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 const LegalNotice = () => {
   return (
@@ -175,6 +176,8 @@ const LegalNotice = () => {
           </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
