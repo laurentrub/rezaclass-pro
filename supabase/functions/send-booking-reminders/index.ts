@@ -188,20 +188,20 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   
                   <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://vacancesfrance.com/account" class="btn">Voir ma réservation</a>
+                    <a href="https://rezaclass.com/account" class="btn">Voir ma réservation</a>
                   </div>
                   
                   <p>Nous vous souhaitons un excellent séjour !</p>
                   
                   <p style="margin-top: 30px;">
                     Cordialement,<br>
-                    <strong>L'équipe VacancesFrance</strong>
+                    <strong>L'équipe Rezaclass</strong>
                   </p>
                 </div>
                 
                 <div class="footer">
                   <p>Cet email a été envoyé automatiquement concernant votre réservation ${bookingRef}</p>
-                  <p>Pour toute question, contactez-nous à contact@vacancesfrance.com</p>
+                  <p>Pour toute question, contactez-nous à contact@rezaclass.com</p>
                 </div>
               </div>
             </body>
@@ -209,7 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const emailResponse = await resend.emails.send({
-          from: "VacancesFrance <onboarding@resend.dev>",
+          from: "Rezaclass <onboarding@resend.dev>",
           to: [profile.email],
           subject: `🏡 Votre séjour commence dans 7 jours - ${propertyTitle}`,
           html: emailHtml,

@@ -45,13 +45,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to user
     const userEmailResponse = await resend.emails.send({
-      from: "VacancesFrance <onboarding@resend.dev>",
+      from: "Rezaclass <onboarding@resend.dev>",
       to: [email],
       subject: "Nous avons reçu votre message",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-            VacancesFrance
+            Rezaclass
           </h1>
           <h2 style="color: #333;">Merci de nous avoir contacté, ${name} !</h2>
           <p style="color: #666; line-height: 1.6;">
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           <p style="color: #999; font-size: 12px; margin-top: 30px;">
             Cordialement,<br>
-            L'équipe VacancesFrance
+            L'équipe Rezaclass
           </p>
         </div>
       `,
@@ -76,8 +76,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "VacancesFrance Contact Form <onboarding@resend.dev>",
-      to: ["contact@vacancesfrance.com"], // Replace with your actual admin email
+      from: "Rezaclass Contact Form <onboarding@resend.dev>",
+      to: ["contact@rezaclass.com"], // Replace with your actual admin email
       subject: `Nouveau message : ${subjectLabels[subject]}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

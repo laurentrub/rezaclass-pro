@@ -46,7 +46,7 @@ export const PropertyNavigation = () => {
           <div className="flex items-center gap-4">
             <a href="/" className="flex items-center gap-2">
               <Home className="text-primary" size={28} />
-              <span className="text-2xl font-bold text-foreground hidden md:inline">VacancesFrance</span>
+              <span className="text-2xl font-bold text-foreground hidden md:inline">Rezaclass</span>
             </a>
             
             <Button

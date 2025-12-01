@@ -33,7 +33,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2">
             <Home className="text-primary" size={28} />
-            <span className="text-2xl font-bold text-foreground">VacancesFrance</span>
+            <span className="text-2xl font-bold text-foreground">Rezaclass</span>
           </a>
           
           <Sheet>
