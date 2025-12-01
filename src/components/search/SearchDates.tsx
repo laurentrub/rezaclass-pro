@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon, X } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,7 +42,9 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
 
   const getDateSummary = () => {
     if (mode === "specific" && value.checkIn && value.checkOut) {
-      return `${format(value.checkIn, "d MMM", { locale: fr })} - ${format(value.checkOut, "d MMM", { locale: fr })}`;
+      const nights = differenceInDays(value.checkOut, value.checkIn);
+      const nightsText = nights > 1 ? "nuits" : "nuit";
+      return `${format(value.checkIn, "d MMM", { locale: fr })} - ${format(value.checkOut, "d MMM", { locale: fr })} (${nights} ${nightsText})`;
     }
     
     if (mode === "flexible") {
