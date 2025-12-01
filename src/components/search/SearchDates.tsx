@@ -37,7 +37,7 @@ const MONTHS = [
 
 export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"flexible" | "specific">(value.mode);
+  const [mode, setMode] = useState<"flexible" | "specific">("specific");
 
   const getDateSummary = () => {
     if (mode === "specific" && value.checkIn && value.checkOut) {
