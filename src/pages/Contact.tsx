@@ -3,7 +3,6 @@ import { ContactDialog } from "@/components/ContactDialog";
 import { Footer } from "@/components/Footer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
 
 const Contact = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -19,67 +18,7 @@ const Contact = () => {
           N'hésitez pas à nous contacter, nous serons ravis de vous aider.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-card rounded-xl p-8 border border-border">
-            <h2 className="text-2xl font-semibold text-card-foreground mb-6">Informations de Contact</h2>
-            
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <Mail className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-card-foreground mb-1">Email</h3>
-                  <a href="mailto:contact@rezaclass.fr" className="text-primary hover:underline">
-                    contact@rezaclass.fr
-                  </a>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Réponse sous 24h en semaine
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <Phone className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-card-foreground mb-1">Téléphone</h3>
-                  <a href="tel:+33123456789" className="text-primary hover:underline">
-                    +33 1 23 45 67 89
-                  </a>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Du lundi au vendredi, 9h - 18h
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <Clock className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-card-foreground mb-1">Horaires d'ouverture</h3>
-                  <p className="text-muted-foreground">Lundi - Vendredi : 9h00 - 18h00</p>
-                  <p className="text-muted-foreground">Weekend : Support d'urgence uniquement</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <MapPin className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-card-foreground mb-1">Adresse</h3>
-                  <p className="text-muted-foreground">
-                    123 Avenue des Champs-Élysées<br />
-                    75008 Paris, France
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="max-w-2xl mx-auto mb-12">
           <div className="bg-card rounded-xl p-8 border border-border">
             <h2 className="text-2xl font-semibold text-card-foreground mb-6">Envoyez-nous un Message</h2>
             <p className="text-muted-foreground mb-6">
