@@ -28,6 +28,7 @@ import {
 export const PropertyAssignment = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedManager, setSelectedManager] = useState<string>("");
+  const [filterManager, setFilterManager] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -144,6 +145,13 @@ export const PropertyAssignment = () => {
     assignMutation.mutate({ propertyId: selectedProperty, managerId });
   };
 
+  // Filter properties based on selected manager
+  const filteredProperties = properties?.filter((property: any) => {
+    if (filterManager === "all") return true;
+    if (filterManager === "none") return !property.managed_by;
+    return property.managed_by === filterManager;
+  });
+
   if (propertiesLoading || managersLoading) {
     return (
       <div className="space-y-4">
@@ -218,7 +226,30 @@ export const PropertyAssignment = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Propriétés et leurs gestionnaires</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Propriétés et leurs gestionnaires</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {filteredProperties?.length || 0} propriété(s) affichée(s)
+              </p>
+            </div>
+            <div className="w-64">
+              <Select value={filterManager} onValueChange={setFilterManager}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrer par gestionnaire" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les propriétés</SelectItem>
+                  <SelectItem value="none">Non attribuées</SelectItem>
+                  {managers?.map((manager: any) => (
+                    <SelectItem key={manager.user_id} value={manager.user_id}>
+                      {manager.profiles?.full_name || manager.profiles?.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -230,7 +261,14 @@ export const PropertyAssignment = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {properties?.map((property: any) => (
+              {filteredProperties?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                    Aucune propriété trouvée
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredProperties?.map((property: any) => (
                 <TableRow key={property.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -252,7 +290,8 @@ export const PropertyAssignment = () => {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
