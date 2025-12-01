@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DateSelection } from "@/types/search";
 
@@ -93,12 +94,38 @@ export const SearchDates = ({ value, onChange }: SearchDatesProps) => {
     });
   };
 
+  const handleClearDates = () => {
+    onChange({
+      mode: "flexible",
+      duration: "flexible",
+      months: [],
+    });
+    setMode("flexible");
+  };
+
+  const hasSelectedDates = 
+    (mode === "specific" && (value.checkIn || value.checkOut)) ||
+    (mode === "flexible" && (value.duration !== "flexible" || (value.months && value.months.length > 0)));
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="flex items-center gap-3 bg-background rounded-lg px-4 py-3 border border-border cursor-pointer hover:border-primary/50 transition-colors">
+        <div className="flex items-center gap-3 bg-background rounded-lg px-4 py-3 border border-border cursor-pointer hover:border-primary/50 transition-colors group">
           <CalendarIcon className="text-muted-foreground" size={20} />
           <div className="flex-1 text-sm">{getDateSummary()}</div>
+          {hasSelectedDates && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClearDates();
+              }}
+            >
+              <X size={14} className="text-muted-foreground" />
+            </Button>
+          )}
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start" sideOffset={8}>
