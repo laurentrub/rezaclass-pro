@@ -30,10 +30,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // THEN check for existing session AND refresh it
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        // Rafraîchir la session pour mettre à jour les claims/tokens
+        const { data: refreshedData } = await supabase.auth.refreshSession();
+        setSession(refreshedData?.session ?? session);
+        setUser(refreshedData?.session?.user ?? session?.user ?? null);
+      } else {
+        setSession(null);
+        setUser(null);
+      }
       setLoading(false);
     });
 

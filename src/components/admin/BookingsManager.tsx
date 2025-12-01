@@ -24,15 +24,21 @@ export const BookingsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { isManager, isLoading: roleLoading } = useAnyAdminRole();
+  const { isManager, hasAdminRole, isLoading: roleLoading } = useAnyAdminRole();
 
   // Set up realtime subscriptions
   useRealtimeBookings(user?.id, isManager);
 
-  const { data: bookings, isLoading } = useQuery({
-    queryKey: ["admin-bookings", user?.id, isManager],
+  const { data: bookings, isLoading, error } = useQuery({
+    queryKey: ["admin-bookings", user?.id, hasAdminRole, isManager],
     queryFn: async () => {
       if (!user) return [];
+      
+      console.log("🔍 Fetching bookings...", { 
+        userId: user.id, 
+        hasAdminRole, 
+        isManager 
+      });
       
       const query = supabase
         .from("bookings")
@@ -57,10 +63,17 @@ export const BookingsManager = () => {
       
       const { data, error } = await query.order("created_at", { ascending: false });
 
+      console.log("✅ Bookings result:", { 
+        count: data?.length || 0, 
+        error: error?.message,
+        data: data 
+      });
+
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user && !roleLoading,
+    enabled: !!user && !roleLoading && hasAdminRole,
+    staleTime: 0,
   });
 
   const fetchPaymentHistory = async (bookingId: string) => {
@@ -202,10 +215,31 @@ export const BookingsManager = () => {
   if (isLoading || roleLoading) {
     return (
       <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Chargement des réservations... 
+          {roleLoading ? " (vérification du rôle)" : " (récupération des données)"}
+        </p>
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-48 w-full" />
         ))}
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-red-500 font-semibold">Erreur lors du chargement</p>
+          <p className="text-muted-foreground mt-2">{(error as Error).message}</p>
+          <Button 
+            className="mt-4" 
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-bookings"] })}
+          >
+            Réessayer
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
