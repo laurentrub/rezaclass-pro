@@ -15,31 +15,8 @@ const TABS = [
 
 export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps) => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isSticky, setIsSticky] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    // Delay sticky detection to prevent immediate sticky on page load
-    const timer = setTimeout(() => setHasInitialized(true), 150);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!hasInitialized) return;
-
-    // Observer for sticky behavior
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsSticky(!entry.isIntersecting);
-      },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
-    );
-
-    const sentinel = document.getElementById("tab-nav-sentinel");
-    if (sentinel) {
-      observer.observe(sentinel);
-    }
-
     // Observer for active section detection
     const sectionObserver = new IntersectionObserver(
       (entries) => {
@@ -63,10 +40,9 @@ export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps
     });
 
     return () => {
-      observer.disconnect();
       sectionObserver.disconnect();
     };
-  }, [hasInitialized]);
+  }, []);
 
   const handleTabClick = (tabId: string) => {
     const section = document.getElementById(tabId);
@@ -87,43 +63,29 @@ export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps
   };
 
   return (
-    <>
-      {/* Invisible sentinel for sticky detection */}
-      <div id="tab-nav-sentinel" className="h-px" />
-      
-      {/* Tab Navigation */}
-      <div
-        className={cn(
-          "bg-background border-b transition-all duration-300 z-40",
-          isSticky ? "fixed top-[80px] left-0 right-0 shadow-md" : "relative"
-        )}
-      >
-        <div className="container mx-auto px-4">
-          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabClick(tab.id)}
-                className={cn(
-                  "relative px-4 py-4 text-sm font-medium whitespace-nowrap transition-colors",
-                  "hover:text-foreground",
-                  activeTab === tab.id
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+    <div className="bg-background border-b">
+      <div className="container mx-auto px-4">
+        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabClick(tab.id)}
+              className={cn(
+                "relative px-4 py-4 text-sm font-medium whitespace-nowrap transition-colors",
+                "hover:text-foreground",
+                activeTab === tab.id
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
+            </button>
+          ))}
+        </nav>
       </div>
-
-      {/* Spacer when sticky */}
-      {isSticky && <div className="h-[57px]" />}
-    </>
+    </div>
   );
 };
