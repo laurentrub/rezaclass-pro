@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { PropertyNavigation } from "@/components/property/PropertyNavigation";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { PropertyMap } from "@/components/property/PropertyMap";
-import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
 import { PropertyActions } from "@/components/property/PropertyActions";
 import { PropertyHighlights } from "@/components/property/PropertyHighlights";
 import { PropertyTabNavigation } from "@/components/property/PropertyTabNavigation";
@@ -167,9 +166,6 @@ const PropertyDetail = () => {
       <PropertyNavigation />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <PropertyBreadcrumb location={property.location} title={property.title} />
-
         {/* Gallery with Actions */}
         <div className="relative">
           <PropertyGallery images={images} title={property.title} />
