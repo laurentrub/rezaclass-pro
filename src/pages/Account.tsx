@@ -176,6 +176,33 @@ const Account = () => {
     }
   }, [searchParams, bookings]);
 
+  // Real-time subscription for booking updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('user-bookings-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Booking updated:', payload);
+          queryClient.invalidateQueries({ queryKey: ["bookings", user.id] });
+          toast.success("Votre réservation a été mise à jour");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
