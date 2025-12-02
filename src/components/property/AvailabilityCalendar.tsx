@@ -12,15 +12,25 @@ interface AvailabilityCalendarProps {
   bookedDates?: Date[];
   blockedDates?: Date[];
   onSelectDates?: (checkIn: Date | undefined, checkOut: Date | undefined) => void;
+  // Controlled mode props
+  selectedCheckIn?: Date;
+  selectedCheckOut?: Date;
 }
 
 export const AvailabilityCalendar = ({ 
   bookedDates = [],
   blockedDates = [],
-  onSelectDates 
+  onSelectDates,
+  selectedCheckIn,
+  selectedCheckOut
 }: AvailabilityCalendarProps) => {
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
+  // Use internal state only if not controlled
+  const [internalCheckIn, setInternalCheckIn] = useState<Date>();
+  const [internalCheckOut, setInternalCheckOut] = useState<Date>();
+  
+  // Use controlled values if provided, otherwise use internal state
+  const checkIn = selectedCheckIn !== undefined ? selectedCheckIn : internalCheckIn;
+  const checkOut = selectedCheckOut !== undefined ? selectedCheckOut : internalCheckOut;
   const [hoveredDate, setHoveredDate] = useState<Date>();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const isMobile = useIsMobile();
@@ -78,13 +88,26 @@ export const AvailabilityCalendar = ({
     touchEndX.current = null;
   };
 
+  const handleSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (range?.from) {
+      // Update internal state only if not controlled
+      if (selectedCheckIn === undefined) {
+        setInternalCheckIn(range.from);
+        setInternalCheckOut(range.to);
+      }
+      onSelectDates?.(range.from, range.to);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <p className="text-sm text-orange-800">
-          Choisissez la période du séjour pour avoir des prix plus précis
-        </p>
-      </div>
+      {!checkIn && !checkOut && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <p className="text-sm text-orange-800">
+            Choisissez la période du séjour pour avoir des prix plus précis
+          </p>
+        </div>
+      )}
 
       <div className="relative">
         {/* Navigation */}
@@ -131,13 +154,7 @@ export const AvailabilityCalendar = ({
                 ? { from: checkIn, to: checkIn }
                 : undefined
             }
-            onSelect={(range) => {
-              if (range?.from) {
-                setCheckIn(range.from);
-                setCheckOut(range.to);
-                onSelectDates?.(range.from, range.to);
-              }
-            }}
+            onSelect={handleSelect}
             disabled={(date) => {
               if (date < new Date()) return true;
               return isDateUnavailable(date);
@@ -195,13 +212,7 @@ export const AvailabilityCalendar = ({
                   ? { from: checkIn, to: checkIn }
                   : undefined
               }
-              onSelect={(range) => {
-                if (range?.from) {
-                  setCheckIn(range.from);
-                  setCheckOut(range.to);
-                  onSelectDates?.(range.from, range.to);
-                }
-              }}
+              onSelect={handleSelect}
               disabled={(date) => {
                 if (date < new Date()) return true;
                 return isDateUnavailable(date);

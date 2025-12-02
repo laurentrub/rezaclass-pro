@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,15 @@ const AMENITY_ICONS: Record<string, any> = {
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
+  // Shared date state for synchronized calendars
+  const [selectedCheckIn, setSelectedCheckIn] = useState<Date>();
+  const [selectedCheckOut, setSelectedCheckOut] = useState<Date>();
+
+  const handleDateSelection = (checkIn: Date | undefined, checkOut: Date | undefined) => {
+    setSelectedCheckIn(checkIn);
+    setSelectedCheckOut(checkOut);
+  };
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", id],
@@ -258,6 +268,9 @@ const PropertyDetail = () => {
               <AvailabilityCalendar
                 bookedDates={bookedDates}
                 blockedDates={blockedDates}
+                selectedCheckIn={selectedCheckIn}
+                selectedCheckOut={selectedCheckOut}
+                onSelectDates={handleDateSelection}
               />
             </div>
 
@@ -303,6 +316,10 @@ const PropertyDetail = () => {
                 bookedDates={[...bookedDates, ...blockedDates]}
                 cleaningFee={Number(property.cleaning_fee) || 0}
                 serviceFee={Number(property.service_fee) || 0}
+                petsAllowed={property.pets_allowed || false}
+                selectedCheckIn={selectedCheckIn}
+                selectedCheckOut={selectedCheckOut}
+                onDatesChange={handleDateSelection}
               />
             </Card>
           </div>
