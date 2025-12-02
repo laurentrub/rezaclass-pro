@@ -1,12 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import React from "react";
 
 const AboutSection = () => {
-  const navigate = useNavigate();
-
-  const handleDestinationClick = (destination: string) => {
-    navigate(`/search?destination=${encodeURIComponent(destination)}`);
-  };
-
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4 max-w-5xl">
