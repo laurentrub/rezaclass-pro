@@ -45,7 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to user
     const userEmailResponse = await resend.emails.send({
-      from: "Rezaclass <onboarding@resend.dev>",
+      from: "Rezaclass <noreply@rezaclass.fr>",
       to: [email],
       subject: "Nous avons reçu votre message",
       html: `
@@ -76,8 +76,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "Rezaclass Contact Form <onboarding@resend.dev>",
-      to: ["contact@rezaclass.com"], // Replace with your actual admin email
+      from: "Rezaclass <noreply@rezaclass.fr>",
+      to: ["contact@rezaclass.fr"],
       subject: `Nouveau message : ${subjectLabels[subject]}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

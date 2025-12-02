@@ -38,8 +38,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending payment proof notification to admin for booking:", bookingId);
 
     const emailResponse = await resend.emails.send({
-      from: "Locations Saisonnières <onboarding@resend.dev>",
-      to: ["admin@locations-saisonnieres.fr"], // TODO: Replace with actual admin email
+      from: "Rezaclass <noreply@rezaclass.fr>",
+      to: ["contact@rezaclass.fr"],
       subject: `🔔 Nouveau justificatif de paiement reçu - Réservation #${bookingId.slice(0, 8)}`,
       html: `
         <!DOCTYPE html>
