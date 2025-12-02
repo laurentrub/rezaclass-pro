@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.send-payment-confirmation]
 verify_jwt = false
 
+[functions.send-payment-status-update]
+verify_jwt = false
+
 [functions.subscribe-newsletter]
 verify_jwt = false
 
