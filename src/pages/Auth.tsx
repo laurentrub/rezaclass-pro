@@ -55,6 +55,33 @@ const Auth = () => {
     setLoading(false);
   };
 
+  // Validation du numéro de téléphone européen
+  const validateEuropeanPhone = (phone: string): boolean => {
+    // Nettoyer le numéro (enlever espaces, tirets, points)
+    const cleanPhone = phone.replace(/[\s\-\.]/g, '');
+    
+    // Formats européens acceptés:
+    // +33612345678 (France)
+    // 0033612345678 (France avec 00)
+    // 0612345678 (France local)
+    // +49123456789 (Allemagne)
+    // +34612345678 (Espagne)
+    // +39312345678 (Italie)
+    // +44712345678 (UK)
+    // +32412345678 (Belgique)
+    // +31612345678 (Pays-Bas)
+    // +41791234567 (Suisse)
+    // +351912345678 (Portugal)
+    // +43612345678 (Autriche)
+    // +352621234567 (Luxembourg)
+    // +377612345678 (Monaco)
+    // +376312345 (Andorre)
+    
+    const europeanPhoneRegex = /^(\+|00)?(33|49|34|39|44|32|31|41|351|43|352|377|376|30|353|358|45|46|47|48|420|421|36|40|359|370|371|372|386|385|381|382|383|355|389|373|380|375|7)[0-9]{6,12}$|^0[1-9][0-9]{8}$/;
+    
+    return europeanPhoneRegex.test(cleanPhone);
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -64,6 +91,16 @@ const Auth = () => {
         variant: "destructive",
         title: "Erreur",
         description: "Le mot de passe doit contenir au moins 6 caractères",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!validateEuropeanPhone(signupPhone)) {
+      toast({
+        variant: "destructive",
+        title: "Numéro invalide",
+        description: "Veuillez entrer un numéro de téléphone européen valide (ex: +33 6 12 34 56 78)",
       });
       setLoading(false);
       return;
