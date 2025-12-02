@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Home } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,7 +123,12 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+        <div className="w-full max-w-md">
+          <a href="/" className="flex items-center justify-center gap-2 mb-8">
+            <Home className="text-primary" size={32} />
+            <span className="text-3xl font-bold text-foreground">Rezaclass</span>
+          </a>
+          <Card>
           <CardHeader>
             <CardTitle>Bienvenue</CardTitle>
             <CardDescription>
@@ -218,6 +224,7 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
       <Footer />
     </div>
