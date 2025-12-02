@@ -16,8 +16,17 @@ const TABS = [
 export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isSticky, setIsSticky] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
+    // Delay sticky detection to prevent immediate sticky on page load
+    const timer = setTimeout(() => setHasInitialized(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!hasInitialized) return;
+
     // Observer for sticky behavior
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -57,7 +66,7 @@ export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps
       observer.disconnect();
       sectionObserver.disconnect();
     };
-  }, []);
+  }, [hasInitialized]);
 
   const handleTabClick = (tabId: string) => {
     const section = document.getElementById(tabId);
@@ -86,7 +95,7 @@ export const PropertyTabNavigation = ({ onTabClick }: PropertyTabNavigationProps
       <div
         className={cn(
           "bg-background border-b transition-all duration-300 z-40",
-          isSticky ? "fixed top-[64px] left-0 right-0 shadow-md" : "relative"
+          isSticky ? "fixed top-[80px] left-0 right-0 shadow-md" : "relative"
         )}
       >
         <div className="container mx-auto px-4">
