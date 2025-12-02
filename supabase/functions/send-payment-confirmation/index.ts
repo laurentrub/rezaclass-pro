@@ -175,14 +175,14 @@ const handler = async (req: Request): Promise<Response> => {
 
             <p style="margin-top: 20px;">
               Cordialement,<br>
-              <strong>L'équipe Location Saisonnière</strong>
+              <strong>L'équipe Rezaclass</strong>
             </p>
           </div>
 
           <div class="footer">
             <p>
               Cet email a été envoyé pour confirmer votre réservation.<br>
-              Si vous avez des questions, contactez-nous à tout moment.
+              Pour toute question, contactez-nous à support@rezaclass.fr
             </p>
           </div>
         </body>
