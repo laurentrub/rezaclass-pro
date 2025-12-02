@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     // Send confirmation email
     try {
       const emailResponse = await resend.emails.send({
-        from: 'Rezaclass <onboarding@resend.dev>',
+        from: 'Rezaclass <noreply@rezaclass.fr>',
         to: [email],
         subject: 'Bienvenue à Rezaclass - Confirmation d\'inscription',
         html: `

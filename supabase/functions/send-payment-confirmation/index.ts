@@ -190,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "Location Saisonnière <onboarding@resend.dev>",
+      from: "Rezaclass <noreply@rezaclass.fr>",
       to: [customerEmail],
       subject: "✅ Votre paiement a été confirmé - Réservation validée",
       html: emailHtml,

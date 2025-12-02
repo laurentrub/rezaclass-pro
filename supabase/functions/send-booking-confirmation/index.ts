@@ -199,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "Gîte France <onboarding@resend.dev>",
+      from: "Rezaclass <noreply@rezaclass.fr>",
       to: [userEmail],
       subject: `Confirmation de réservation - ${propertyTitle}`,
       html: emailHtml,

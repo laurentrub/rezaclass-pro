@@ -209,7 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const emailResponse = await resend.emails.send({
-          from: "Rezaclass <onboarding@resend.dev>",
+          from: "Rezaclass <noreply@rezaclass.fr>",
           to: [profile.email],
           subject: `🏡 Votre séjour commence dans 7 jours - ${propertyTitle}`,
           html: emailHtml,
