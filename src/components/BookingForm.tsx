@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInDays } from "date-fns";
+import { Minus, Plus, PawPrint } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface BookingFormProps {
   propertyId: string;
@@ -16,6 +18,11 @@ interface BookingFormProps {
   bookedDates: Date[];
   cleaningFee?: number;
   serviceFee?: number;
+  petsAllowed?: boolean;
+  // Controlled dates from parent
+  selectedCheckIn?: Date;
+  selectedCheckOut?: Date;
+  onDatesChange?: (checkIn: Date | undefined, checkOut: Date | undefined) => void;
 }
 
 export const BookingForm = ({ 
@@ -24,16 +31,65 @@ export const BookingForm = ({
   maxGuests, 
   bookedDates,
   cleaningFee = 0,
-  serviceFee = 0
+  serviceFee = 0,
+  petsAllowed = false,
+  selectedCheckIn,
+  selectedCheckOut,
+  onDatesChange
 }: BookingFormProps) => {
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
+  // Use controlled dates if provided, otherwise use internal state
+  const [internalCheckIn, setInternalCheckIn] = useState<Date>();
+  const [internalCheckOut, setInternalCheckOut] = useState<Date>();
+  
+  const checkIn = selectedCheckIn !== undefined ? selectedCheckIn : internalCheckIn;
+  const checkOut = selectedCheckOut !== undefined ? selectedCheckOut : internalCheckOut;
+  
   const [specialRequests, setSpecialRequests] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Guest selection state
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [hasPets, setHasPets] = useState(false);
   
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const totalGuests = adults + children;
+
+  const handleDateSelection = (newCheckIn: Date | undefined, newCheckOut: Date | undefined) => {
+    if (onDatesChange) {
+      onDatesChange(newCheckIn, newCheckOut);
+    } else {
+      setInternalCheckIn(newCheckIn);
+      setInternalCheckOut(newCheckOut);
+    }
+  };
+
+  const incrementAdults = () => {
+    if (totalGuests < maxGuests) {
+      setAdults(prev => prev + 1);
+    }
+  };
+
+  const decrementAdults = () => {
+    if (adults > 1) {
+      setAdults(prev => prev - 1);
+    }
+  };
+
+  const incrementChildren = () => {
+    if (totalGuests < maxGuests) {
+      setChildren(prev => prev + 1);
+    }
+  };
+
+  const decrementChildren = () => {
+    if (children > 0) {
+      setChildren(prev => prev - 1);
+    }
+  };
 
   const calculatePrices = () => {
     if (!checkIn || !checkOut) {
@@ -67,6 +123,14 @@ export const BookingForm = ({
     setLoading(true);
 
     try {
+      // Build special requests with pet info if applicable
+      let fullSpecialRequests = specialRequests;
+      if (hasPets && petsAllowed) {
+        fullSpecialRequests = fullSpecialRequests 
+          ? `${fullSpecialRequests}\n\nAnimal de compagnie: Oui`
+          : "Animal de compagnie: Oui";
+      }
+
       // Create booking
       const { data: booking, error: bookingError } = await supabase
         .from("bookings")
@@ -75,10 +139,10 @@ export const BookingForm = ({
           property_id: propertyId,
           check_in_date: checkIn.toISOString().split('T')[0],
           check_out_date: checkOut.toISOString().split('T')[0],
-          guests: maxGuests,
+          guests: totalGuests,
           total_price: calculatePrices().totalPrice,
           status: "pending",
-          special_requests: specialRequests || null,
+          special_requests: fullSpecialRequests || null,
         })
         .select()
         .single();
@@ -125,11 +189,98 @@ export const BookingForm = ({
 
       <AvailabilityCalendar
         bookedDates={bookedDates}
-        onSelectDates={(checkInDate, checkOutDate) => {
-          setCheckIn(checkInDate);
-          setCheckOut(checkOutDate);
-        }}
+        selectedCheckIn={checkIn}
+        selectedCheckOut={checkOut}
+        onSelectDates={handleDateSelection}
       />
+
+      {/* Guest Selection */}
+      <div className="space-y-4">
+        <Label className="text-base font-semibold">Voyageurs</Label>
+        
+        {/* Adults */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">Adultes</p>
+            <p className="text-sm text-muted-foreground">13 ans et plus</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={decrementAdults}
+              disabled={adults <= 1}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="w-8 text-center font-medium">{adults}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={incrementAdults}
+              disabled={totalGuests >= maxGuests}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Children */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">Enfants</p>
+            <p className="text-sm text-muted-foreground">2-12 ans</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={decrementChildren}
+              disabled={children <= 0}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="w-8 text-center font-medium">{children}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={incrementChildren}
+              disabled={totalGuests >= maxGuests}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Maximum {maxGuests} voyageurs
+        </p>
+
+        {/* Pets */}
+        {petsAllowed && (
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-2">
+              <PawPrint className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Animal de compagnie</p>
+                <p className="text-sm text-muted-foreground">Animaux acceptés</p>
+              </div>
+            </div>
+            <Switch
+              checked={hasPets}
+              onCheckedChange={setHasPets}
+            />
+          </div>
+        )}
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="special-requests">Demandes spéciales (optionnel)</Label>
