@@ -43,9 +43,9 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("id", bookingId)
       .single();
 
-    if (bookingError || !booking) {
+    if (bookingError) {
       console.error("Error fetching booking:", bookingError);
-      throw bookingError ?? new Error("Booking not found");
+      throw bookingError;
     }
 
     // Fetch user profile
@@ -70,8 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
     const bookingRef = `RES-${bookingId.slice(0, 8).toUpperCase()}`;
 
-    // 👉 nouvelle façon de construire l'URL front : plus de .lovableproject.com
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://rezaclass.fr";
+    const frontendUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || '';
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -200,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "RezaClass <noreply@rezaclass.fr>",
+      from: "Gîte France <onboarding@resend.dev>",
       to: [userEmail],
       subject: `Confirmation de réservation - ${propertyTitle}`,
       html: emailHtml,
