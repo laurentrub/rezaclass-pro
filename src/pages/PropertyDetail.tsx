@@ -48,10 +48,19 @@ const PropertyDetail = () => {
   // Shared date state for synchronized calendars
   const [selectedCheckIn, setSelectedCheckIn] = useState<Date>();
   const [selectedCheckOut, setSelectedCheckOut] = useState<Date>();
+  
+  // Guest state for calendar display
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
 
   const handleDateSelection = (checkIn: Date | undefined, checkOut: Date | undefined) => {
     setSelectedCheckIn(checkIn);
     setSelectedCheckOut(checkOut);
+  };
+
+  const handleGuestsChange = (newAdults: number, newChildren: number) => {
+    setAdults(newAdults);
+    setChildren(newChildren);
   };
 
   const { data: property, isLoading } = useQuery({
@@ -67,6 +76,23 @@ const PropertyDetail = () => {
       return data;
     },
     enabled: !!id,
+  });
+
+  // Fetch manager profile for last connection
+  const { data: managerProfile } = useQuery({
+    queryKey: ["manager-profile", property?.managed_by],
+    queryFn: async () => {
+      if (!property?.managed_by) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("updated_at")
+        .eq("id", property.managed_by)
+        .single();
+
+      if (error) return null;
+      return data;
+    },
+    enabled: !!property?.managed_by,
   });
 
   // Fetch existing bookings to show booked dates
@@ -267,6 +293,8 @@ const PropertyDetail = () => {
                 selectedCheckIn={selectedCheckIn}
                 selectedCheckOut={selectedCheckOut}
                 onSelectDates={handleDateSelection}
+                adults={adults}
+                children={children}
               />
             </div>
 
@@ -316,6 +344,8 @@ const PropertyDetail = () => {
                 selectedCheckIn={selectedCheckIn}
                 selectedCheckOut={selectedCheckOut}
                 onDatesChange={handleDateSelection}
+                onGuestsChange={handleGuestsChange}
+                managerLastSeen={managerProfile?.updated_at ? new Date(managerProfile.updated_at) : null}
               />
             </Card>
           </div>

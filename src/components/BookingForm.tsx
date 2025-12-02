@@ -26,6 +26,10 @@ interface BookingFormProps {
   selectedCheckIn?: Date;
   selectedCheckOut?: Date;
   onDatesChange?: (checkIn: Date | undefined, checkOut: Date | undefined) => void;
+  // Callback to expose guest counts
+  onGuestsChange?: (adults: number, children: number) => void;
+  // Manager last connection
+  managerLastSeen?: Date | null;
 }
 
 export const BookingForm = ({ 
@@ -38,7 +42,9 @@ export const BookingForm = ({
   petsAllowed = false,
   selectedCheckIn,
   selectedCheckOut,
-  onDatesChange
+  onDatesChange,
+  onGuestsChange,
+  managerLastSeen
 }: BookingFormProps) => {
   // Use controlled dates if provided, otherwise use internal state
   const [internalCheckIn, setInternalCheckIn] = useState<Date>();
@@ -102,25 +108,33 @@ export const BookingForm = ({
 
   const incrementAdults = () => {
     if (totalGuests < maxGuests) {
-      setAdults(prev => prev + 1);
+      const newAdults = adults + 1;
+      setAdults(newAdults);
+      onGuestsChange?.(newAdults, children);
     }
   };
 
   const decrementAdults = () => {
     if (adults > 1) {
-      setAdults(prev => prev - 1);
+      const newAdults = adults - 1;
+      setAdults(newAdults);
+      onGuestsChange?.(newAdults, children);
     }
   };
 
   const incrementChildren = () => {
     if (totalGuests < maxGuests) {
-      setChildren(prev => prev + 1);
+      const newChildren = children + 1;
+      setChildren(newChildren);
+      onGuestsChange?.(adults, newChildren);
     }
   };
 
   const decrementChildren = () => {
     if (children > 0) {
-      setChildren(prev => prev - 1);
+      const newChildren = children - 1;
+      setChildren(newChildren);
+      onGuestsChange?.(adults, newChildren);
     }
   };
 
@@ -464,7 +478,18 @@ export const BookingForm = ({
 
       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Zap className="h-4 w-4" />
-        <span>Cet hôte est réactif</span>
+        <div className="text-center">
+          <span>Cet hôte est réactif</span>
+          {managerLastSeen && (
+            <p className="text-xs">
+              Dernière connexion : {managerLastSeen.toLocaleDateString("fr-FR", { 
+                day: "numeric", 
+                month: "long", 
+                year: "numeric" 
+              })}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

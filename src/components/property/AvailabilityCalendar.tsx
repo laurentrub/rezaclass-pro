@@ -15,6 +15,9 @@ interface AvailabilityCalendarProps {
   // Controlled mode props
   selectedCheckIn?: Date;
   selectedCheckOut?: Date;
+  // Guest info for display
+  adults?: number;
+  children?: number;
 }
 
 export const AvailabilityCalendar = ({ 
@@ -22,7 +25,9 @@ export const AvailabilityCalendar = ({
   blockedDates = [],
   onSelectDates,
   selectedCheckIn,
-  selectedCheckOut
+  selectedCheckOut,
+  adults,
+  children
 }: AvailabilityCalendarProps) => {
   // Use internal state only if not controlled
   const [internalCheckIn, setInternalCheckIn] = useState<Date>();
@@ -265,23 +270,36 @@ export const AvailabilityCalendar = ({
 
       {checkIn && (
         <div className="p-4 bg-muted rounded-lg">
-          <p className="font-medium mb-2">Dates sélectionnées:</p>
-          <p className="text-sm">
-            Arrivée: {checkIn.toLocaleDateString("fr-FR", { 
-              day: "numeric", 
-              month: "long", 
-              year: "numeric" 
-            })}
-          </p>
-          {checkOut && (
-            <p className="text-sm">
-              Départ: {checkOut.toLocaleDateString("fr-FR", { 
-                day: "numeric", 
-                month: "long", 
-                year: "numeric" 
-              })}
-            </p>
-          )}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div>
+              <p className="font-medium mb-2">Dates sélectionnées:</p>
+              <p className="text-sm">
+                Arrivée: {checkIn.toLocaleDateString("fr-FR", { 
+                  day: "numeric", 
+                  month: "long", 
+                  year: "numeric" 
+                })}
+              </p>
+              {checkOut && (
+                <p className="text-sm">
+                  Départ: {checkOut.toLocaleDateString("fr-FR", { 
+                    day: "numeric", 
+                    month: "long", 
+                    year: "numeric" 
+                  })}
+                </p>
+              )}
+            </div>
+            {(adults !== undefined || children !== undefined) && (
+              <div>
+                <p className="font-medium mb-2">Voyageurs:</p>
+                <p className="text-sm">
+                  {adults || 0} adulte{(adults || 0) > 1 ? "s" : ""}
+                  {children && children > 0 && `, ${children} enfant${children > 1 ? "s" : ""}`}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
