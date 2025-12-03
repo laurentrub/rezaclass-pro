@@ -98,9 +98,12 @@ export const PropertyNavigation = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
-                <SheetHeader>
-                  <SheetTitle className="text-left">Menu</SheetTitle>
-                </SheetHeader>
+              <SheetHeader>
+                <SheetTitle className="text-left flex items-center gap-2">
+                  <img src={logo} alt="Rezaclass" className="h-8 w-auto" />
+                  Menu
+                </SheetTitle>
+              </SheetHeader>
                 
                 <div className="flex flex-col gap-4 mt-6">
                   {user ? (
