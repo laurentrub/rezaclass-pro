@@ -39,14 +39,14 @@ const Account = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
+      <div className="flex flex-col md:flex-row min-h-[calc(100vh-80px)]">
         <AccountSidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           onSignOut={signOut}
         />
         
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 p-4 md:p-8">
           <div className="max-w-4xl">
             {renderContent()}
           </div>
