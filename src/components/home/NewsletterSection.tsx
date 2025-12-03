@@ -63,7 +63,7 @@ const NewsletterSection = () => {
 
   return (
     <section className="py-20 bg-primary/5">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
             <Mail className="w-8 h-8 text-primary" />

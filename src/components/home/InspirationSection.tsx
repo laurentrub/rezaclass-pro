@@ -74,7 +74,7 @@ const InspirationSection = () => {
 
   return (
     <section className="py-20 bg-muted/20">
-      <div className="container mx-auto px-4 max-w-5xl">
+      <div className="container mx-auto px-4 md:px-8 max-w-5xl">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-foreground">
           Plus d'idées de vacances
         </h2>

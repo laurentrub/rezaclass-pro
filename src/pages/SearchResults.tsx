@@ -71,7 +71,7 @@ const SearchResults = () => {
       
       {/* Sticky Search Bar */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 md:px-8 py-4 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-[2fr,2fr,1.5fr,auto] gap-3">
             <SearchDestination
               value={searchCriteria.destination}
@@ -100,7 +100,7 @@ const SearchResults = () => {
       </div>
 
       {/* Results Section */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 md:px-8 py-8 max-w-7xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2">
