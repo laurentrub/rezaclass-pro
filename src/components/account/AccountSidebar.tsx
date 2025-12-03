@@ -45,7 +45,7 @@ const SidebarContent = ({
           key={item.id}
           variant={activeSection === item.id ? "default" : "ghost"}
           className={cn(
-            "w-full justify-start gap-3 h-11",
+            "w-full justify-start gap-3 h-11 text-left",
             activeSection === item.id && "bg-primary text-primary-foreground"
           )}
           onClick={() => {
@@ -53,8 +53,8 @@ const SidebarContent = ({
             onItemClick?.();
           }}
         >
-          <item.icon className="h-4 w-4" />
-          {item.label}
+          <item.icon className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{item.label}</span>
         </Button>
       ))}
     </nav>
