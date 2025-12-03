@@ -107,7 +107,7 @@ const Index = () => {
       <ServicesSection />
       
       {/* Properties Section */}
-      <section className="py-20 container mx-auto px-4">
+      <section className="py-20 container mx-auto px-4 md:px-8 max-w-7xl">
         <div className="mb-16">
           <div className="text-center mb-8">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
