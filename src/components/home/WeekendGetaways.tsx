@@ -43,7 +43,7 @@ export const WeekendGetaways = () => {
   };
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 md:px-8 max-w-7xl">
         <div className="mb-8">
           <h2 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
