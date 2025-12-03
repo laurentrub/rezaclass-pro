@@ -1,4 +1,5 @@
-import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check, ChevronLeft, HelpCircle, LogOut } from "lucide-react";
+import { Heart, User, Shield, Menu, MessageCircle, Globe, Check, ChevronLeft, HelpCircle, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -45,7 +46,7 @@ export const PropertyNavigation = () => {
           {/* Left: Logo + Back to Search */}
           <div className="flex items-center gap-4">
             <a href="/" className="flex items-center gap-2">
-              <Home className="text-primary" size={28} />
+              <img src={logo} alt="Rezaclass" className="h-10 w-auto" />
               <span className="text-2xl font-bold text-foreground hidden md:inline">Rezaclass</span>
             </a>
             
