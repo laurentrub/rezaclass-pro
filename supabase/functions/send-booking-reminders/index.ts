@@ -69,6 +69,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${bookings.length} booking(s) to remind`);
 
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || '';
     const emailResults = [];
 
     // Send reminder email for each booking
@@ -188,7 +189,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   
                   <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://rezaclass.com/account" class="btn">Voir ma réservation</a>
+                    <a href="${frontendUrl}/mon-compte" class="btn">Voir ma réservation</a>
                   </div>
                   
                   <p>Nous vous souhaitons un excellent séjour !</p>
@@ -201,7 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
                 
                 <div class="footer">
                   <p>Cet email a été envoyé automatiquement concernant votre réservation ${bookingRef}</p>
-                  <p>Pour toute question, contactez-nous à contact@rezaclass.com</p>
+                  <p>Pour toute question, contactez-nous à support@rezaclass.fr</p>
                 </div>
               </div>
             </body>
@@ -209,7 +210,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const emailResponse = await resend.emails.send({
-          from: "Rezaclass <onboarding@resend.dev>",
+          from: "Rezaclass <noreply@rezaclass.fr>",
           to: [profile.email],
           subject: `🏡 Votre séjour commence dans 7 jours - ${propertyTitle}`,
           html: emailHtml,

@@ -125,7 +125,7 @@ export const BookingsManager = () => {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: async ({ id, payment_status, admin_commission, owner_payout_amount, admin_notes, booking }: any) => {
+    mutationFn: async ({ id, payment_status, admin_commission, owner_payout_amount, admin_notes, booking, oldStatus }: any) => {
       const { error } = await supabase
         .from("bookings")
         .update({ payment_status, admin_commission, owner_payout_amount, admin_notes })
@@ -133,10 +133,10 @@ export const BookingsManager = () => {
 
       if (error) throw error;
 
-      // Send confirmation email if payment is confirmed
-      if (payment_status === "received" && booking) {
+      // Send email notification for payment status changes
+      if (booking && oldStatus !== payment_status) {
         try {
-          await supabase.functions.invoke("send-payment-confirmation", {
+          await supabase.functions.invoke("send-payment-status-update", {
             body: {
               bookingId: booking.id,
               customerEmail: booking.profiles?.email,
@@ -145,11 +145,13 @@ export const BookingsManager = () => {
               checkInDate: booking.check_in_date,
               checkOutDate: booking.check_out_date,
               totalPrice: booking.total_price,
+              oldStatus: oldStatus,
+              newStatus: payment_status,
             },
           });
-          console.log("Payment confirmation email sent");
+          console.log("Payment status update email sent");
         } catch (emailError) {
-          console.error("Error sending confirmation email:", emailError);
+          console.error("Error sending status update email:", emailError);
           // Don't throw - payment update was successful
         }
       }
@@ -396,7 +398,8 @@ export const BookingsManager = () => {
                               admin_commission: payoutDetails.commission,
                               owner_payout_amount: payoutDetails.ownerPayout,
                               admin_notes: booking.admin_notes,
-                              booking: booking
+                              booking: booking,
+                              oldStatus: booking.payment_status
                             })
                           }
                         >

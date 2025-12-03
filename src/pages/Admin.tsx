@@ -12,8 +12,8 @@ import { BlockedPeriodsManager } from "@/components/admin/BlockedPeriodsManager"
 import { Dashboard } from "@/components/admin/Dashboard";
 import { ManagersManager } from "@/components/admin/ManagersManager";
 import { PropertyAssignment } from "@/components/admin/PropertyAssignment";
-import { Shield } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import logo from "@/assets/logo.png";
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
@@ -50,7 +50,7 @@ const Admin = () => {
       
       <section className="container mx-auto px-4 py-24">
         <div className="flex items-center gap-3 mb-8">
-          <Shield className="w-8 h-8 text-primary" />
+          <img src={logo} alt="Rezaclass" className="h-12 w-auto" />
           <div>
             <h1 className="text-4xl font-bold">
               Tableau de Bord {role === "admin" ? "Admin" : "Manager"}

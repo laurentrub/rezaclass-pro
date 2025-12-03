@@ -1,4 +1,5 @@
-import { Home, Heart, User, Shield, Menu, MessageCircle, Globe, Check, LogOut } from "lucide-react";
+import { Heart, User, Shield, Menu, MessageCircle, Globe, Check, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAnyAdminRole } from "@/hooks/useAnyAdminRole";
@@ -32,7 +33,7 @@ export const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <Home className="text-primary" size={28} />
+            <img src={logo} alt="Rezaclass" className="h-10 w-auto" />
             <span className="text-2xl font-bold text-foreground">Rezaclass</span>
           </a>
           
@@ -44,7 +45,10 @@ export const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <SheetHeader>
-                <SheetTitle className="text-left">Menu</SheetTitle>
+                <SheetTitle className="text-left flex items-center gap-2">
+                  <img src={logo} alt="Rezaclass" className="h-8 w-auto" />
+                  Menu
+                </SheetTitle>
               </SheetHeader>
               
               <div className="flex flex-col gap-4 mt-6">

@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PropertyNavigation } from "@/components/property/PropertyNavigation";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { PropertyMap } from "@/components/property/PropertyMap";
-import { PropertyBreadcrumb } from "@/components/property/PropertyBreadcrumb";
 import { PropertyActions } from "@/components/property/PropertyActions";
 import { PropertyHighlights } from "@/components/property/PropertyHighlights";
 import { PropertyTabNavigation } from "@/components/property/PropertyTabNavigation";
@@ -44,6 +44,24 @@ const AMENITY_ICONS: Record<string, any> = {
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
+  // Shared date state for synchronized calendars
+  const [selectedCheckIn, setSelectedCheckIn] = useState<Date>();
+  const [selectedCheckOut, setSelectedCheckOut] = useState<Date>();
+  
+  // Guest state for calendar display
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+
+  const handleDateSelection = (checkIn: Date | undefined, checkOut: Date | undefined) => {
+    setSelectedCheckIn(checkIn);
+    setSelectedCheckOut(checkOut);
+  };
+
+  const handleGuestsChange = (newAdults: number, newChildren: number) => {
+    setAdults(newAdults);
+    setChildren(newChildren);
+  };
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", id],
@@ -58,6 +76,23 @@ const PropertyDetail = () => {
       return data;
     },
     enabled: !!id,
+  });
+
+  // Fetch manager profile for last connection
+  const { data: managerProfile } = useQuery({
+    queryKey: ["manager-profile", property?.managed_by],
+    queryFn: async () => {
+      if (!property?.managed_by) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("updated_at")
+        .eq("id", property.managed_by)
+        .single();
+
+      if (error) return null;
+      return data;
+    },
+    enabled: !!property?.managed_by,
   });
 
   // Fetch existing bookings to show booked dates
@@ -156,10 +191,7 @@ const PropertyDetail = () => {
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <PropertyNavigation />
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <PropertyBreadcrumb location={property.location} title={property.title} />
-
+      <div className="container mx-auto px-4 md:px-8 py-8 max-w-7xl">
         {/* Gallery with Actions */}
         <div className="relative">
           <PropertyGallery images={images} title={property.title} />
@@ -258,6 +290,11 @@ const PropertyDetail = () => {
               <AvailabilityCalendar
                 bookedDates={bookedDates}
                 blockedDates={blockedDates}
+                selectedCheckIn={selectedCheckIn}
+                selectedCheckOut={selectedCheckOut}
+                onSelectDates={handleDateSelection}
+                adults={adults}
+                children={children}
               />
             </div>
 
@@ -303,6 +340,12 @@ const PropertyDetail = () => {
                 bookedDates={[...bookedDates, ...blockedDates]}
                 cleaningFee={Number(property.cleaning_fee) || 0}
                 serviceFee={Number(property.service_fee) || 0}
+                petsAllowed={property.pets_allowed || false}
+                selectedCheckIn={selectedCheckIn}
+                selectedCheckOut={selectedCheckOut}
+                onDatesChange={handleDateSelection}
+                onGuestsChange={handleGuestsChange}
+                managerLastSeen={managerProfile?.updated_at ? new Date(managerProfile.updated_at) : null}
               />
             </Card>
           </div>

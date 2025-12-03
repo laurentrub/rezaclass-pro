@@ -1,10 +1,15 @@
+import logo from "@/assets/logo.png";
+
 export const Footer = () => {
   return (
-    <footer className="bg-card border-t border-border py-12">
-      <div className="container mx-auto px-4">
+    <footer className="bg-card border-t border-border py-16">
+      <div className="container mx-auto px-4 md:px-8 max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4 text-card-foreground">Rezaclass</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <img src={logo} alt="Rezaclass" className="h-10 w-auto" />
+              <h3 className="font-bold text-lg text-card-foreground">Rezaclass</h3>
+            </div>
             <p className="text-muted-foreground">
               Votre partenaire de confiance pour des locations de vacances exceptionnelles en France.
             </p>

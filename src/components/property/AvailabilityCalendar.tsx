@@ -12,15 +12,30 @@ interface AvailabilityCalendarProps {
   bookedDates?: Date[];
   blockedDates?: Date[];
   onSelectDates?: (checkIn: Date | undefined, checkOut: Date | undefined) => void;
+  // Controlled mode props
+  selectedCheckIn?: Date;
+  selectedCheckOut?: Date;
+  // Guest info for display
+  adults?: number;
+  children?: number;
 }
 
 export const AvailabilityCalendar = ({ 
   bookedDates = [],
   blockedDates = [],
-  onSelectDates 
+  onSelectDates,
+  selectedCheckIn,
+  selectedCheckOut,
+  adults,
+  children
 }: AvailabilityCalendarProps) => {
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
+  // Use internal state only if not controlled
+  const [internalCheckIn, setInternalCheckIn] = useState<Date>();
+  const [internalCheckOut, setInternalCheckOut] = useState<Date>();
+  
+  // Use controlled values if provided, otherwise use internal state
+  const checkIn = selectedCheckIn !== undefined ? selectedCheckIn : internalCheckIn;
+  const checkOut = selectedCheckOut !== undefined ? selectedCheckOut : internalCheckOut;
   const [hoveredDate, setHoveredDate] = useState<Date>();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const isMobile = useIsMobile();
@@ -78,13 +93,26 @@ export const AvailabilityCalendar = ({
     touchEndX.current = null;
   };
 
+  const handleSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (range?.from) {
+      // Update internal state only if not controlled
+      if (selectedCheckIn === undefined) {
+        setInternalCheckIn(range.from);
+        setInternalCheckOut(range.to);
+      }
+      onSelectDates?.(range.from, range.to);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <p className="text-sm text-orange-800">
-          Choisissez la période du séjour pour avoir des prix plus précis
-        </p>
-      </div>
+      {!checkIn && !checkOut && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <p className="text-sm text-orange-800">
+            Choisissez la période du séjour pour avoir des prix plus précis
+          </p>
+        </div>
+      )}
 
       <div className="relative">
         {/* Navigation */}
@@ -131,13 +159,7 @@ export const AvailabilityCalendar = ({
                 ? { from: checkIn, to: checkIn }
                 : undefined
             }
-            onSelect={(range) => {
-              if (range?.from) {
-                setCheckIn(range.from);
-                setCheckOut(range.to);
-                onSelectDates?.(range.from, range.to);
-              }
-            }}
+            onSelect={handleSelect}
             disabled={(date) => {
               if (date < new Date()) return true;
               return isDateUnavailable(date);
@@ -195,13 +217,7 @@ export const AvailabilityCalendar = ({
                   ? { from: checkIn, to: checkIn }
                   : undefined
               }
-              onSelect={(range) => {
-                if (range?.from) {
-                  setCheckIn(range.from);
-                  setCheckOut(range.to);
-                  onSelectDates?.(range.from, range.to);
-                }
-              }}
+              onSelect={handleSelect}
               disabled={(date) => {
                 if (date < new Date()) return true;
                 return isDateUnavailable(date);
@@ -254,23 +270,36 @@ export const AvailabilityCalendar = ({
 
       {checkIn && (
         <div className="p-4 bg-muted rounded-lg">
-          <p className="font-medium mb-2">Dates sélectionnées:</p>
-          <p className="text-sm">
-            Arrivée: {checkIn.toLocaleDateString("fr-FR", { 
-              day: "numeric", 
-              month: "long", 
-              year: "numeric" 
-            })}
-          </p>
-          {checkOut && (
-            <p className="text-sm">
-              Départ: {checkOut.toLocaleDateString("fr-FR", { 
-                day: "numeric", 
-                month: "long", 
-                year: "numeric" 
-              })}
-            </p>
-          )}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div>
+              <p className="font-medium mb-2">Dates sélectionnées:</p>
+              <p className="text-sm">
+                Arrivée: {checkIn.toLocaleDateString("fr-FR", { 
+                  day: "numeric", 
+                  month: "long", 
+                  year: "numeric" 
+                })}
+              </p>
+              {checkOut && (
+                <p className="text-sm">
+                  Départ: {checkOut.toLocaleDateString("fr-FR", { 
+                    day: "numeric", 
+                    month: "long", 
+                    year: "numeric" 
+                  })}
+                </p>
+              )}
+            </div>
+            {(adults !== undefined || children !== undefined) && (
+              <div>
+                <p className="font-medium mb-2">Voyageurs:</p>
+                <p className="text-sm">
+                  {adults || 0} adulte{(adults || 0) > 1 ? "s" : ""}
+                  {children && children > 0 && `, ${children} enfant${children > 1 ? "s" : ""}`}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

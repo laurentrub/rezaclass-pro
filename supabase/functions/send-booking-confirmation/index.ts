@@ -30,14 +30,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Processing booking confirmation for:", bookingId);
 
-    // Fetch booking details with property information
+    // Fetch booking details with property information including owner_id
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
       .select(`
         *,
         properties (
           title,
-          location
+          location,
+          owner_id
         )
       `)
       .eq("id", bookingId)
@@ -47,6 +48,28 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error fetching booking:", bookingError);
       throw bookingError ?? new Error("Booking not found");
     }
+
+    // Fetch property owner bank details
+    let ownerName = "Rezaclass";
+    let ownerIban = "Non disponible";
+    let ownerBic = "Non disponible";
+
+    if (booking.properties?.owner_id) {
+      const { data: owner, error: ownerError } = await supabase
+        .from("property_owners")
+        .select("name, bank_details")
+        .eq("id", booking.properties.owner_id)
+        .single();
+
+      if (!ownerError && owner) {
+        ownerName = owner.name || "Rezaclass";
+        const bankDetails = owner.bank_details as { iban?: string; bic?: string } | null;
+        ownerIban = bankDetails?.iban || "Non disponible";
+        ownerBic = bankDetails?.bic || "Non disponible";
+      }
+    }
+
+    console.log("Owner bank details fetched:", { ownerName, hasIban: ownerIban !== "Non disponible" });
 
     // Fetch user profile
     const { data: profile } = await supabase
@@ -70,8 +93,12 @@ const handler = async (req: Request): Promise<Response> => {
     });
     const bookingRef = `RES-${bookingId.slice(0, 8).toUpperCase()}`;
 
+<<<<<<< HEAD
     // 👉 nouvelle façon de construire l'URL front : plus de .lovableproject.com
     const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://rezaclass.fr";
+=======
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || '';
+>>>>>>> dev
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -141,9 +168,9 @@ const handler = async (req: Request): Promise<Response> => {
                 <p><strong>Pour finaliser votre réservation, veuillez effectuer un virement bancaire avec les informations suivantes :</strong></p>
                 
                 <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px solid #f59e0b;">
-                  <p style="margin: 8px 0; font-size: 15px;"><strong>Titulaire du compte :</strong> Gîtes de France</p>
-                  <p style="margin: 8px 0; font-size: 15px;"><strong>IBAN :</strong> FR76 1234 5678 9012 3456 7890 123</p>
-                  <p style="margin: 8px 0; font-size: 15px;"><strong>BIC :</strong> BNPAFRPPXXX</p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>Titulaire du compte :</strong> ${ownerName}</p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>IBAN :</strong> ${ownerIban}</p>
+                  <p style="margin: 8px 0; font-size: 15px;"><strong>BIC :</strong> ${ownerBic}</p>
                   <p style="margin: 8px 0; font-size: 16px;"><strong>Montant à virer :</strong> <span style="color: #2563eb; font-size: 18px;">${booking.total_price}€</span></p>
                   <p style="margin: 8px 0; font-size: 15px;"><strong>Référence obligatoire :</strong> <span style="background-color: #fef3c7; padding: 4px 8px; border-radius: 4px;">${bookingRef}</span></p>
                 </div>
@@ -187,12 +214,12 @@ const handler = async (req: Request): Promise<Response> => {
               
               <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
               
-              <p>À très bientôt,<br><strong>L'équipe Gîte France</strong></p>
+              <p>À très bientôt,<br><strong>L'équipe Rezaclass</strong></p>
             </div>
             
             <div class="footer">
               <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-              <p>Pour toute question, contactez-nous à contact@gitefrance.fr</p>
+              <p>Pour toute question, contactez-nous à support@rezaclass.fr</p>
             </div>
           </div>
         </body>
@@ -200,11 +227,13 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
+
       from: "RezaClass <noreply@rezaclass.fr>",
       to: [userEmail],
       subject: `Confirmation de réservation - ${propertyTitle}`,
       html: emailHtml,
     });
+
 
     console.log("Email sent successfully:", emailResponse);
 
